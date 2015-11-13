@@ -1,0 +1,15 @@
+*.js
+.DS_Store
+.npm-debug.log
+tmp
+logs
+*.log
+pids
+*.pid
+*.seed
+lib-cov
+coverage
+.grunt
+.lock-wscript
+build/Release
+node_modules
