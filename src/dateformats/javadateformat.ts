@@ -1,0 +1,2 @@
+class JavaDateFormat extends DateFormat {
+}
