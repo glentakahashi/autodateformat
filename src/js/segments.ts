@@ -1,5 +1,12 @@
 ///<reference path='util.ts'/>
 ///<reference path='timezones.ts'/>
+//
+//TODO: refactor getters and setters to have more consistent names
+//TODO: switch everything to use ENUM
+
+//enum SegmentTypes {
+  //StringSegmentType,
+//}
 
 class SegmentType {
   valid: boolean = false;
@@ -368,8 +375,30 @@ class Segment {
     return !(!this.types[segmentType.name] || !this.types[segmentType.name].isEnabled());
   }
 
+
+  //TODO: make this more semanticly in line with getType
+  public getTypes(): SegmentType[] {
+    var types: SegmentType[] = [];
+    for(var i: number = 0; i<segmentTypes.length; i++) {
+      if(this.has(segmentTypes[i])) {
+        types.push(this.getType(segmentTypes[i]));
+      }
+    }
+    return types;
+  }
+
+  public getEnabledTypes(): SegmentType[] {
+    var types: SegmentType[] = [];
+    for(var i: number = 0; i<segmentTypes.length; i++) {
+      if(this.hasEnabled(segmentTypes[i])) {
+        types.push(this.getType(segmentTypes[i]));
+      }
+    }
+    return types;
+  }
+
   public getType(segmentType: typeof SegmentType): SegmentType {
-    if(this.hasEnabled(segmentType)) {
+    if(this.has(segmentType)) {
       return this.types[segmentType.name];
     }
     return null;
@@ -435,6 +464,16 @@ class Segment {
     return found;
   }
 
+  public setSelected(segmentType: typeof SegmentType) {
+    if(this.has(segmentType)) {
+      this.enableType(segmentType);
+      this.selected = segmentType;
+    }
+  }
+
+  public getSelected(): typeof SegmentType {
+    return this.selected;
+  }
 
   public toString(): string {
     var str: string = "\"" + this.token + "\"";

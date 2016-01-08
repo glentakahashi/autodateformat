@@ -1,5 +1,19 @@
 .segment {
-  font-color: blue;
+  display: inline-block;
+  border: 1px solid black;
+  padding: 5px;
+}
+
+.disabled {
+  opacity: .3;
+}
+
+.selected {
+  color: green;
+}
+
+.conflicted {
+  color: red;
 }
 
 .segments {

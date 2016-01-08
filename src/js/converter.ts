@@ -2,40 +2,35 @@
 ///<reference path='segments.ts'/>
 //dateformats: DateFormat[] = [BashDateFormat, JavaDateFormat];
 
+function getRandomInt(min: number, max: number):number {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+var testDates: string[] = [
+  "Sun, 29 Feb 2004 16:21:42 -0800",
+  "Wednesday 16th October 2013 19:00 CET",
+  "Sunday, 29 February 2004 16:21:42 -0800",
+  "2004-02-29 16:21:42",
+  "1997-07-16T19:20:30+01:00",
+  "1997-07-16T19:20:30",
+  "1997-07-16T19:20+01:00",
+  "1997-07-16T19:20",
+  "1997-07-07T19:20:30+01:00",
+  "1997-07-07T192030+01:00",
+  "1997-07-07T192030+0100",
+  "1997-07-07 192030+0100",
+  "11/11/11",
+  "11/11/2011",
+  "11.11.2011",
+  "11/11/2011 01:03:45.1203",
+  "11/11/2011 01:03:45.1203Z",
+  "11/11/2011 01:03:45.1203 GMT",
+  "10230810",
+];
+
 $(window).ready(function() {
-  var testDates: string[] = [
-    "Sun, 29 Feb 2004 16:21:42 -0800",
-    "Wednesday 16th October 2013 19:00 CET",
-    "Sunday, 29 February 2004 16:21:42 -0800",
-    "2004-02-29 16:21:42",
-    "1997-07-16T19:20:30+01:00",
-    "1997-07-16T19:20:30",
-    "1997-07-16T19:20+01:00",
-    "1997-07-16T19:20",
-    "1997-07-07T19:20:30+01:00",
-    "1997-07-07T192030+01:00",
-    "1997-07-07T192030+0100",
-    "1997-07-07 192030+0100",
-    "11/11/11",
-    "11/11/2011",
-    "11.11.2011",
-    "11/11/2011 01:03:45.1203",
-    "11/11/2011 01:03:45.1203Z",
-    "11/11/2011 01:03:45.1203 GMT",
-    "10230810",
-  ];
-  var tests: any = $("#tests");
-  for(var k: number = 0; k<testDates.length; k++) {
-    var ele: any = $("<div class='segment'></div>");
-    ele.html(testDates[k] + "<br>");
-    var segments: Segment[] = parseDate(testDates[k]);
-    segments = consolidateSegmentTypes(segments);
-    for(var i: number = 0; i<segments.length; i++) {
-      ele.html(ele.html() + segments[i] + "<br>");
-    }
-    ele.html(ele.html() + "<br><br><br><br>");
-    tests.append(ele);
-  }
+  //testing
+  $(".date").val(testDates[getRandomInt(0,testDates.length)]);
 
   $('.btn').click(function(ev: JQueryEventObject) {
     var date: string = $(this).parent().children().first().val();
@@ -44,13 +39,35 @@ $(window).ready(function() {
     for(var i: number = 0; i<segments.length; i++) {
       console.log(segments[i]);
     }
-    //console.log(segments);
-    //parsedDate = parseDate(date);
+    selectSegmentTypes(date, segments);
+    $(".date").val(testDates[getRandomInt(0,testDates.length)]);
     //console.log(parsedDate);
     //var convertedDates = convertDate(parsedDate);
     //console.log(convertedDates);
   });
 });
+
+function selectSegmentTypes(date: string, segments: Segment[]) {
+  var segsEle: any = $(".segments");
+  segsEle.html(date+"<br><br>");
+  for(var i: number = 0; i<segments.length; i++) {
+    var segEle: any = $("<div class='segment'/>");
+    var segmentTypes: SegmentType[] = segments[i].getTypes();
+    for(var j: number = 0; j<segmentTypes.length; j++) {
+      var segTypeEle: any = $("<div class='segment-type'/>");
+      segTypeEle.text(segmentTypes[j].constructor.name);
+      if(!segmentTypes[j].isEnabled()) {
+        segTypeEle.addClass('disabled');
+        segEle.append(segTypeEle);
+      } else {
+        segEle.prepend(segTypeEle);
+      }
+    }
+    segEle.prepend("<br><br>");
+    segEle.prepend(segments[i].getToken());
+    segsEle.append(segEle);
+  }
+}
 
 //function convertDate(segments: SegmentType[]) {
   //var convertedDates = {};

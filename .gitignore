@@ -14,3 +14,7 @@ coverage
 build/Release
 node_modules
 .sass-cache
+
+# Should I remove these?
+*.css
+*.map
