@@ -1,0 +1,36 @@
+.segment, .segmentType, .segmentTypeSetting {
+  display: inline-block;
+  border: 1px solid black;
+  padding: 5px;
+}
+
+.segment {
+  display: block;
+}
+
+.disabled {
+  opacity: .3;
+}
+
+.selected {
+  color: green;
+}
+
+.conflicted {
+  color: red;
+}
+
+.segments {
+}
+
+.statusclass-okay {
+  color: green;
+}
+
+.statusclass-warn {
+  color: yellow;
+}
+
+.statusclass-error {
+  color: red;
+}
