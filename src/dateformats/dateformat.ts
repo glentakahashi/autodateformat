@@ -1,3 +1,0 @@
-interface DateFormat {
-  tokens: string[];
-}
