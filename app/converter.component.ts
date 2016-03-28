@@ -14,7 +14,7 @@ import {DateFormatComponent} from './dateformat.component';
         <button className="btn" (click)="setRandom()">Random</button>
       </div>
       <dateformat [datetime]="datetime"></dateformat>
-      <datetime [dt]="datetime"></datetime>
+      <datetime [datetime]="datetime"></datetime>
     </div>
   `,
 })

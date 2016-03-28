@@ -9,6 +9,7 @@ export abstract class DateFormat {
   }
 
   public abstract getFormat(): DateFormatSegment[];
-  public abstract getExample(): string;
+  public abstract getPrintExample(): string;
+  public abstract getParseExample(): string;
   public abstract getLabel(): string;
 }

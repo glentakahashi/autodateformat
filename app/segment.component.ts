@@ -5,11 +5,11 @@ import {SegmentTypeComponent} from './segment-type.component';
 
 @Component({
   directives: [SegmentTypeComponent],
-  inputs: ['segment'],
+  inputs: ['segment', 'datetime'],
   selector: 'segment',
   template: `
     <div class="segment">
-      Token: {{segment.token}}
+      Token: {{segment.token}} (<a (click)="datetime.splitSegment(segment)">Split</a> | <a (click)="datetime.editSegment(segment)">Edit</a> | <a (click)="datetime.deleteSegment(segment)">Delete</a>)
       <segmentType *ngFor="#segmentType of segment.getTypes()" [segmentType]="segmentType" (click)="setSelected(segment,segmentType)" [selected]="isSelected(segment, segmentType)"></segmentType>
     </div>
   `,

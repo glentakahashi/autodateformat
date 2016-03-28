@@ -461,6 +461,8 @@ export class LongTimezoneSegmentType extends StringSegmentType {
 }
 
 export enum TimezoneOffsetType {
+  // TODO: rename to "Necessary precision??" Does anything use an "Hour only" timezone, given that there are things that are 1:30, 5:45, etc.
+  // US uses things like -3 CST or -3 EST or  stuff??
   Hour, // +-XX
   HourMinute, // +-XXXX
   HourMinuteSecond, // +-XXXXXX

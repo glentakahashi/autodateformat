@@ -27,8 +27,149 @@ export class DateTime {
     }
   }
 
+  public toString(): string {
+    let str: string = "";
+    for (let i = 0; i < this.segments.length; i++) {
+      str += this.segments[i].getToken();
+    }
+    return str;
+  }
+
   public getSegments(): Segment[] {
     return this.segments;
+  }
+
+  // TODO: is there a better way? Should I reuse the modals or create a new one every time... not sure
+  public editSegment(segment: Segment) {
+    let segmentId = this.segments.indexOf(segment);
+    $('#edit-segment-modal input').val(segment.getToken());
+    $('#edit-segment-modal .btn-primary').off('click');
+    $('#edit-segment-modal .btn-primary').click(() => {
+      let val = $('#edit-segment-modal input').val();
+      let newSegment: Segment = new Segment(val);
+      newSegment.setSelected(segment.getSelected());
+      if (newSegment.getSelected() === null) {
+        newSegment.setSelected(FillSegmentType);
+      }
+      this.segments.splice(segmentId, 1, newSegment);
+      $('#edit-segment-modal').modal('hide');
+    });
+    $('#edit-segment-modal').modal();
+  }
+
+  public deleteSegment(segment: Segment) {
+    let segmentId = this.segments.indexOf(segment);
+    $('#delete-segment-modal .btn-primary').off('click');
+    $('#delete-segment-modal .btn-primary').click(() => {
+      this.segments.splice(segmentId, 1);
+      $('#delete-segment-modal').modal('hide');
+    });
+    $('#delete-segment-modal').modal();
+  }
+
+  public newSegment(segment: Segment) {
+    let segmentId = this.segments.indexOf(segment);
+    $('#new-segment-modal input').val(segment.getToken());
+    $('#new-segment-modal .btn-primary').off('click');
+    $('#new-segment-modal .btn-primary').click(() => {
+      let val = $('#new-segment-modal input').val();
+      let newSegment: Segment = new Segment(val);
+      newSegment.setSelected(FillSegmentType);
+      this.segments.splice(segmentId + 1, 0, newSegment);
+      $('#new-segment-modal').modal('hide');
+    });
+    $('#new-segment-modal').modal();
+  }
+
+  public joinSegments() {
+    $('#join-segments-modal .segments').html('');
+    $('#join-segments-modal .slider').html('');
+    let start = Math.floor(this.segments.length / 2);
+    let end = Math.floor(Math.min(this.segments.length - 1, this.segments.length / 2 + 1));
+    let ele;
+    for (let i = 0; i < this.segments.length; i++) {
+      ele = $('<li>' + this.segments[i].getToken() + '</li>');
+      if (i === start || i === end) {
+        ele.addClass('joining');
+      }
+      $('#join-segments-modal .segments').append(ele);
+    }
+    $('#join-segments-modal .slider').slider({
+      max: this.segments.length - 1,
+      min: 0,
+      range: true,
+      slide: (e, ui) => {
+        let lis = $('#join-segments-modal .segments li');
+        lis.removeClass('joining');
+        for (let i = ui.values[0]; i <= ui.values[1]; i++) {
+          $(lis[i]).addClass('joining');
+        }
+      },
+      values: [start, end],
+    });
+    $('#join-segments-modal .btn-primary').off('click');
+    $('#join-segments-modal .btn-primary').click(() => {
+      let range = $('#join-segments-modal .slider').slider('option', 'values');
+      let token = '';
+      for (let i = range[0]; i <= range[1]; i++) {
+        token += this.segments[i].getToken();
+      }
+      let newSegment: Segment = new Segment(token);
+      newSegment.setSelected(FillSegmentType);
+      this.segments.splice(range[0],range[1]-range[0] + 1, newSegment);
+      $('#join-segments-modal').modal('hide');
+    });
+    $('#join-segments-modal').modal();
+
+  }
+
+  public splitSegment(segment: Segment) {
+    let segmentId = this.segments.indexOf(segment);
+    let token: string = this.segments[segmentId].getToken();
+    let newSegment: Segment;
+    let newSegments: Segment[] = [];
+    let ul = $('#split-segment-modal .characters');
+    ul.html('');
+    for (let i = 0; i < token.length; i++) {
+      ul.append('<li>' + token[i] + '</li>');
+      if (i != token.length -1) {
+        ul.append('<input type="checkbox">');
+      }
+    }
+    $('#split-segment-modal .btn-primary').off('click');
+    $('#split-segment-modal .btn-primary').click(() => {
+      let start = 0;
+      let end = 0;
+      let substringIndices: number[] = [];
+      let checkboxes = $('#split-segment-modal .characters input');
+      for (let i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+          substringIndices.push(i+1);
+        }
+      }
+      for (let i in substringIndices) {
+        end = substringIndices[i];
+        if (end > token.length) {
+          throw new Error("Tried to split on out of bounds");
+        }
+        newSegment = new Segment(token.substring(start, end));
+        newSegment.setSelected(FillSegmentType);
+        newSegments.push(newSegment);
+        start = substringIndices[i];
+      }
+      if (start < token.length) {
+        newSegment = new Segment(token.substring(start, token.length));
+        newSegment.setSelected(FillSegmentType);
+        newSegments.push(newSegment);
+      }
+      this.segments.splice(segmentId, 1);
+      // XXX: FOR IN RETURNS A STRING???
+      for (let i = 0; i < newSegments.length; i++) {
+        this.segments.splice(segmentId + i, 0, newSegments[i]);
+      }
+      $('#split-segment-modal').modal('hide');
+    });
+    $('#split-segment-modal').modal();
   }
 
   private parseSegments(datetimeString: string) {
@@ -53,18 +194,6 @@ export class DateTime {
       }
     }
     return changed;
-  }
-
-  private splitSegment(segmentId: number, substringIndices: number[]) {
-    let token: string = this.segments[segmentId].getToken();
-    let start = 0;
-    let end = 0;
-    this.segments.splice(segmentId, 1);
-    for (let i in substringIndices) {
-      start = 0;
-      end = substringIndices[i];
-      this.segments.splice(segmentId, 0, new Segment(token.substring(start, end - start)));
-    }
   }
 
   private consolidateSegmentTypes(segments: Segment[]): void {

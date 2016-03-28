@@ -7,6 +7,7 @@ export class Segment {
 
   constructor(token: string) {
     this.token = token;
+    this.selected = null;
     this.types = {};
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
       let segmentType: typeof SegmentType = SEGMENT_TYPES[i];
@@ -21,7 +22,7 @@ export class Segment {
   }
 
   public has(segmentType: typeof SegmentType): boolean {
-    return this.types[segmentType.name] !== null;
+    return this.types[segmentType.name];
   }
 
   public hasEnabled(segmentType: typeof SegmentType): boolean {

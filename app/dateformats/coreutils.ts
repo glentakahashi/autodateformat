@@ -198,8 +198,13 @@ export class CoreutilsDateFormat extends DateFormat {
     return formatString;
   }
 
-  public getExample(): string {
-    return "`date '+" + this.getFormatString() + "'`";
+  // TODO: what if it doesn't have parsing?? (like this one) Probably, just return null and show an info
+  public getParseExample(): string {
+    return "date '+" + this.getFormatString() + "' --date='" + this.datetime.toString() + "'";
+  }
+
+  public getPrintExample(): string {
+    return "date '+" + this.getFormatString() + "'";
   }
 
   private getCasedSegmentType(segmentType: StringSegmentType, formatString: string, extraFormatters: string): DateFormatSegment {
