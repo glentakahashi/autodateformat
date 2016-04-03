@@ -10,8 +10,12 @@ lib-cov
 coverage
 .grunt
 .lock-wscript
-build/Release
 .sass-cache
+.tscache
+
+# Build
+dist
+dev
 
 # Should I remove these?
 *.css

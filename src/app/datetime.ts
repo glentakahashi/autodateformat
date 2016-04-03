@@ -28,7 +28,7 @@ export class DateTime {
   }
 
   public toString(): string {
-    let str: string = "";
+    let str = "";
     for (let i = 0; i < this.segments.length; i++) {
       str += this.segments[i].getToken();
     }
@@ -116,7 +116,7 @@ export class DateTime {
       }
       let newSegment: Segment = new Segment(token);
       newSegment.setSelected(FillSegmentType);
-      this.segments.splice(range[0],range[1]-range[0] + 1, newSegment);
+      this.segments.splice(range[0], range[1] - range[0] + 1, newSegment);
       $('#join-segments-modal').modal('hide');
     });
     $('#join-segments-modal').modal();
@@ -132,7 +132,7 @@ export class DateTime {
     ul.html('');
     for (let i = 0; i < token.length; i++) {
       ul.append('<li>' + token[i] + '</li>');
-      if (i != token.length -1) {
+      if (i !== token.length - 1) {
         ul.append('<input type="checkbox">');
       }
     }
@@ -143,11 +143,11 @@ export class DateTime {
       let substringIndices: number[] = [];
       let checkboxes = $('#split-segment-modal .characters input');
       for (let i = 0; i < checkboxes.length; i++) {
-        if (checkboxes[i].checked) {
-          substringIndices.push(i+1);
+        if ((<HTMLInputElement> checkboxes[i]).checked) {
+          substringIndices.push(i + 1);
         }
       }
-      for (let i in substringIndices) {
+      for (let i = 0; i < substringIndices.length; i++) {
         end = substringIndices[i];
         if (end > token.length) {
           throw new Error("Tried to split on out of bounds");

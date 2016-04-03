@@ -2,6 +2,7 @@
   "ambientDependencies": {
     "bootstrap": "registry:dt/bootstrap#3.3.5+20160316155526",
     "es6-shim": "github:DefinitelyTyped/DefinitelyTyped/es6-shim/es6-shim.d.ts#6697d6f7dadbf5773cb40ecda35a76027e0783b2",
-    "jquery": "registry:dt/jquery#1.10.0+20160316155526"
+    "jquery": "registry:dt/jquery#1.10.0+20160316155526",
+    "jqueryui": "registry:dt/jqueryui#1.9.0+20160317120654"
   }
 }

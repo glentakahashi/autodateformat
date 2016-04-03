@@ -22,7 +22,7 @@ export class Segment {
   }
 
   public has(segmentType: typeof SegmentType): boolean {
-    return this.types[segmentType.name];
+    return this.types[segmentType.name] !== undefined && this.types[segmentType.name] !== null;
   }
 
   public hasEnabled(segmentType: typeof SegmentType): boolean {

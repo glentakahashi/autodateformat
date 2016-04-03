@@ -6,6 +6,7 @@
     <!--<script> if (typeof jQuery == 'undefined') { document.write(unescape("%3Cscript src='/js/jquery-2.1.4.min.js' type='text/javascript'%3E%3C/script%3E")); } </script>-->
     <!-- 1. Load libraries -->
     <!-- IE required polyfills, in this exact order -->
+    <!--(if target dev)><!-->
     <script src="node_modules/es6-shim/es6-shim.min.js"></script>
     <script src="node_modules/systemjs/dist/system-polyfills.js"></script>
     <script src="node_modules/angular2/es6/dev/src/testing/shims_for_IE.js"></script>   
@@ -20,20 +21,38 @@
     <script>
       System.config({
         packages: {
-          "build/app": {
+          "app": {
             format: 'register',
             defaultExtension: 'js'
           }
         }
       });
-      System.import('build/app/main')
+      System.import('app/main')
             .then(null, console.error.bind(console));
     </script>
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css" charset="utf-8">
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap-theme.css" charset="utf-8">
     <link rel="stylesheet" href="node_modules/jqueryui/jquery-ui.structure.css" charset="utf-8">
     <link rel="stylesheet" href="node_modules/jqueryui/jquery-ui.theme.css" charset="utf-8">
-    <link rel="stylesheet" href="styles/style.css" charset="utf-8">
+    <!--<!(endif)-->
+    <!--(if target dist)>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.0/es6-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.19.24/system-polyfills.js"></script>
+    <script src="https://npmcdn.com/angular2@2.0.0-beta.13/es6/dev/src/testing/shims_for_IE.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/2.0.0-beta.13/angular2-polyfills.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.19.24/system.src.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/2.0.0-beta.13/Rx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/2.0.0-beta.13/angular2.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="app/main.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.structure.min.css" charset="utf-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.theme.min.css" charset="utf-8">
+    <!(endif)-->
+    <link rel="stylesheet" href="stylesheets/main.css" charset="utf-8">
   </head>
   <body>
     <converter>Loading...</converter>
@@ -131,5 +150,9 @@
         </div>
       </div>
     </div>
+    <!-- 2. Configure SystemJS -->
+    <script>
+      System.import('app/main').then(null, console.error.bind(console));
+    </script>
   </body>
 </html>

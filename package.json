@@ -4,15 +4,15 @@
   "scripts": {
     "postinstall": "npm run typings install",
     "tsc": "tsc",
-    "tsc:w": "tsc -w",
-    "sass:w": "sass --watch styles",
+    "tsc:w": "tsc -w --outDir dev --sourceMap",
+    "compass:w": "compass watch -c compass.rb -e dev",
     "lite": "lite-server",
-    "start": "concurrent \"npm run sass:w\" \"npm run tsc:w\" \"npm run lite\" ",
+    "start": "mkdir -p dev && cp src/index.html dev/index.html && concurrent \"npm run compass:w\" \"npm run tsc:w\" \"npm run lite\" ",
     "typings": "typings"
   },
   "license": "ISC",
   "dependencies": {
-    "angular2": "2.0.0-beta.12",
+    "angular2": "^2.0.0-beta.13",
     "bootstrap": "^3.3.6",
     "es6-shim": "^0.35.0",
     "jquery": "^2.2.2",
@@ -24,9 +24,16 @@
   },
   "devDependencies": {
     "concurrently": "^2.0.0",
-    "grunt-sass": "^1.1.0",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-compass": "^1.1.1",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-targethtml": "^0.2.6",
+    "grunt-ts": "^5.4.0",
     "lite-server": "^2.1.0",
     "typescript": "^1.8.9",
-    "typings":"^0.7.9"
+    "typings": "^0.7.9",
+    "uglify": "^0.1.5"
   }
 }
