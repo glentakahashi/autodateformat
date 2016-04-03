@@ -1,2 +1,0 @@
-class BashDateFormat extends DateFormat {
-}

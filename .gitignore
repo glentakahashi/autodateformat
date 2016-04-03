@@ -1,4 +1,3 @@
-*.js
 .DS_Store
 .npm-debug.log
 tmp
@@ -11,10 +10,12 @@ lib-cov
 coverage
 .grunt
 .lock-wscript
-build/Release
-node_modules
 .sass-cache
+.tscache
+
+# Build
+dev
 
 # Should I remove these?
-*.css
 *.map
+node_modules
