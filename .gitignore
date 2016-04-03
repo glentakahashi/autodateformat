@@ -14,11 +14,8 @@ coverage
 .tscache
 
 # Build
-dist
 dev
 
 # Should I remove these?
-*.css
 *.map
 node_modules
-*.js
