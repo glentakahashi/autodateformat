@@ -6,6 +6,4 @@ note gem install sass for autodateformat
 add to gemfile
 add to package.js
 
-split out all classes into their own file
-
-youcompleteme?
+make a releasing script for easy zip bundling for github
