@@ -8,10 +8,10 @@ import {SegmentComponent} from './segment.component';
     template: `
       <div class="datetime" *ngIf="datetime">
         <div>{{datetime.toString()}}</div>
-        <a (click)="datetime.joinSegments()">Join Segments</a>
-        <div *ngFor="#segment of datetime.segments">
+        <div *ngFor="#segment of datetime.segments; #last=last">
           <segment [segment]="segment" [datetime]="datetime">Segment</segment>
           <a (click)="datetime.newSegment(segment)">New Segment</a>
+          <a *ngIf="!last" (click)="datetime.joinSegment(segment)">Combine Segments</a>
         </div>
       </div>
     `,

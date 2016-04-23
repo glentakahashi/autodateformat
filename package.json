@@ -9,7 +9,7 @@
     "tsc:w": "tsc -w --outDir dev --sourceMap",
     "compass:w": "compass watch -c compass.rb -e dev",
     "lite": "lite-server",
-    "start": "mkdir -p dev && cp src/index.html dev/index.html && concurrent \"npm run compass:w\" \"npm run tsc:w\" \"npm run lite\" ",
+    "start": "mkdir -p dev && ln -sf ../src/index.html dev/index.html && concurrent \"npm run compass:w\" \"npm run tsc:w\" \"npm run lite\" ",
     "typings": "typings"
   },
   "license": "ISC",

@@ -81,46 +81,20 @@ export class DateTime {
     $('#new-segment-modal').modal();
   }
 
-  public joinSegments() {
-    $('#join-segments-modal .segments').html('');
-    $('#join-segments-modal .slider').html('');
-    let start = Math.floor(this.segments.length / 2);
-    let end = Math.floor(Math.min(this.segments.length - 1, this.segments.length / 2 + 1));
-    let ele;
-    for (let i = 0; i < this.segments.length; i++) {
-      ele = $('<li>' + this.segments[i].getToken() + '</li>');
-      if (i === start || i === end) {
-        ele.addClass('joining');
-      }
-      $('#join-segments-modal .segments').append(ele);
-    }
-    $('#join-segments-modal .slider').slider({
-      max: this.segments.length - 1,
-      min: 0,
-      range: true,
-      slide: (e, ui) => {
-        let lis = $('#join-segments-modal .segments li');
-        lis.removeClass('joining');
-        for (let i = ui.values[0]; i <= ui.values[1]; i++) {
-          $(lis[i]).addClass('joining');
-        }
-      },
-      values: [start, end],
-    });
+  public joinSegment(segment: Segment) {
+    let segmentId = this.segments.indexOf(segment);
+    $('#join-segments-modal .segment1').text('"' + this.segments[segmentId].getToken() + '"');
+    $('#join-segments-modal .segment2').text('"' + this.segments[segmentId + 1].getToken() + '"');
+    $('#join-segments-modal .segment-out').text('"' + this.segments[segmentId].getToken() + this.segments[segmentId + 1].getToken() + '"');
     $('#join-segments-modal .btn-primary').off('click');
     $('#join-segments-modal .btn-primary').click(() => {
-      let range = $('#join-segments-modal .slider').slider('option', 'values');
-      let token = '';
-      for (let i = range[0]; i <= range[1]; i++) {
-        token += this.segments[i].getToken();
-      }
+      let token = this.segments[segmentId].getToken() + this.segments[segmentId + 1].getToken();
       let newSegment: Segment = new Segment(token);
       newSegment.setSelected(FillSegmentType);
-      this.segments.splice(range[0], range[1] - range[0] + 1, newSegment);
+      this.segments.splice(segmentId, 2, newSegment);
       $('#join-segments-modal').modal('hide');
     });
     $('#join-segments-modal').modal();
-
   }
 
   public splitSegment(segment: Segment) {
