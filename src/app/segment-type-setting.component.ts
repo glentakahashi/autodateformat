@@ -6,7 +6,7 @@ import {MapToIterable} from './map-to-iterable.directive';
   selector: 'booleanSegmentTypeSetting',
   template: `
     <input class="segmentTypeSetting booleanSetting" name="{{segmentTypeSetting.name}}" type='checkbox' placeholder="{{segmentTypeSetting.placeholder}}" [(ngModel)]="segmentTypeSetting.value">
-    <label attr.for="{{segmentTypeSetting.name}}">{{segmentTypeSetting.label}}</label>
+    <label attr.for="{{segmentTypeSetting.name}}" attr.title="{{segmentTypeSetting.getHelpText()}}">{{segmentTypeSetting.label}}</label>
   `,
 })
 export class BooleanSegmentTypeSettingComponent {
@@ -17,7 +17,7 @@ export class BooleanSegmentTypeSettingComponent {
   selector: 'stringSegmentTypeSetting',
   template: `
     <input class="segmentTypeSetting stringSetting" name="{{segmentTypeSetting.name}}" type='text' placeholder="{{segmentTypeSetting.placeholder}}" [(ngModel)]="segmentTypeSetting.value">
-    <label attr.for="{{segmentTypeSetting.name}}">{{segmentTypeSetting.label}}</label>
+    <label attr.for="{{segmentTypeSetting.name}}" attr.title="{{segmentTypeSetting.getHelpText()}}">{{segmentTypeSetting.label}}</label>
   `,
 })
 export class StringSegmentTypeSettingComponent {
@@ -29,7 +29,7 @@ export class StringSegmentTypeSettingComponent {
   selector: 'dropdownSegmentTypeSetting',
   template: `
     <select class="segmentTypeSetting dropdownSetting" [(ngModel)]="segmentTypeSetting.value">
-      <label>{{segmentTypeSetting.label}}</label>
+      <label attr.title="{{segmentTypeSetting.getHelpText()}}">{{segmentTypeSetting.label}}</label>
       <option *ngFor="#possibleValue of segmentTypeSetting.possibleValues | mapToIterable" [value]="possibleValue.key">
         {{possibleValue.val}}
       </option>

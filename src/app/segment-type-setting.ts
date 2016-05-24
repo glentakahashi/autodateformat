@@ -23,6 +23,10 @@ export abstract class SegmentTypeSetting {
   public setValue(value: any) {
     this.value = value;
   }
+
+  public getHelpText(): string {
+    return this.helptext;
+  }
 }
 
 export class BooleanSegmentTypeSetting extends SegmentTypeSetting {
