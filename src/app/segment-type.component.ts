@@ -7,7 +7,7 @@ import {SegmentTypeSettingsComponent} from './segment-type-settings.component';
     selector: 'segmentType',
     template: `
       <div class="segmentType" *ngIf="segmentType.valid" [class.disabled]="!segmentType.enabled" [class.selected]="selected">
-        {{segmentType.name}}
+        {{segmentType.getLabel()}}
         <segmentTypeSettings [segmentTypeSettings]="segmentType.getSettings()"></segmentTypeSettings>
       </div>
     `,

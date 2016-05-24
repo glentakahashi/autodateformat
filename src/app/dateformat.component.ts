@@ -36,13 +36,13 @@ export class DateFormatComponent {
     let foundTypes: typeof SegmentType[] = [];
     let foundDuplicates: typeof SegmentType[] = [];
     // Find duplicate segmentTypes and warn about it
-    for (let i in segments) {
-      segmentType = segments[i].getSelected();
+    for (let i = 0; i < segments.length; i++) {
+      segmentType = segments[i].getSelectedType();
       if (segmentType === null) {
         continue;
       }
       if (foundTypes.indexOf(segmentType) > -1 && foundDuplicates.indexOf(segmentType) === -1 && segmentType !== FillSegmentType) {
-        warnings.push("Multiple segmentTypes of " + segmentType.name + " found.");
+        warnings.push("Multiple segmentTypes of " + segmentType.label + " found.");
         foundDuplicates.push(segmentType);
       } else {
         foundTypes.push(segmentType);

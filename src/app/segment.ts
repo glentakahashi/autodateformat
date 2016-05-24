@@ -14,19 +14,19 @@ export class Segment {
       let segment: SegmentType = Object.create(segmentType.prototype);
       segment.constructor.apply(segment, new Array(token));
       if (segment.isValid()) {
-        this.types[segmentType.name] = segment;
+        this.types[segmentType.id] = segment;
       } else {
-        this.types[segmentType.name] = null;
+        this.types[segmentType.id] = null;
       }
     }
   }
 
   public has(segmentType: typeof SegmentType): boolean {
-    return this.types[segmentType.name] !== undefined && this.types[segmentType.name] !== null;
+    return this.types[segmentType.id] !== undefined && this.types[segmentType.id] !== null;
   }
 
   public hasEnabled(segmentType: typeof SegmentType): boolean {
-    return !(!this.types[segmentType.name] || !this.types[segmentType.name].isEnabled());
+    return !(!this.types[segmentType.id] || !this.types[segmentType.id].isEnabled());
   }
 
   // TODO: make this more semantically in line with getType
@@ -52,7 +52,7 @@ export class Segment {
 
   public getType(segmentType: typeof SegmentType): SegmentType {
     if (this.has(segmentType)) {
-      return this.types[segmentType.name];
+      return this.types[segmentType.id];
     }
     return null;
   }
@@ -72,21 +72,21 @@ export class Segment {
   }
 
   public enableType(segmentType: typeof SegmentType) {
-    if (this.types[segmentType.name]) {
-      this.types[segmentType.name].enable();
+    if (this.types[segmentType.id]) {
+      this.types[segmentType.id].enable();
     }
   }
 
   public disableType(segmentType: typeof SegmentType) {
-    if (this.types[segmentType.name]) {
-      this.types[segmentType.name].disable();
+    if (this.types[segmentType.id]) {
+      this.types[segmentType.id].disable();
     }
   }
 
   public setType(segmentType: typeof SegmentType) {
     this.enableType(segmentType);
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
-      if (segmentType.name !== SEGMENT_TYPES[i].name) {
+      if (segmentType.id !== SEGMENT_TYPES[i].id) {
         this.disableType(SEGMENT_TYPES[i]);
       }
     }
@@ -107,11 +107,11 @@ export class Segment {
   public getOnlySegmentType(): SegmentType {
     let found: SegmentType = null;
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
-      if (this.types[SEGMENT_TYPES[i].name] && this.types[SEGMENT_TYPES[i].name].isEnabled()) {
+      if (this.types[SEGMENT_TYPES[i].id] && this.types[SEGMENT_TYPES[i].id].isEnabled()) {
         if (found) {
           return null;
         }
-        found = this.types[SEGMENT_TYPES[i].name];
+        found = this.types[SEGMENT_TYPES[i].id];
       }
     }
     return found;
@@ -124,23 +124,27 @@ export class Segment {
     }
   }
 
-  public setSelectedName(segmentTypeName: string) {
+  public setSelectedID(segmentTypeID: string) {
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
-      if (SEGMENT_TYPES[i].name === segmentTypeName) {
+      if (SEGMENT_TYPES[i].id === segmentTypeID) {
         this.setSelected(SEGMENT_TYPES[i]);
       }
     }
   }
 
-  public getSelected(): typeof SegmentType {
+  public getSelectedType(): typeof SegmentType {
     return this.selected;
+  }
+
+  public getSelected(): SegmentType {
+    return this.getType(this.selected);
   }
 
   public toString(): string {
     let str: string = "\"" + this.token + "\"";
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
-      if (this.types[SEGMENT_TYPES[i].name] && this.types[SEGMENT_TYPES[i].name].isEnabled()) {
-        str += ", " + SEGMENT_TYPES[i].name;
+      if (this.types[SEGMENT_TYPES[i].id] && this.types[SEGMENT_TYPES[i].id].isEnabled()) {
+        str += ", " + SEGMENT_TYPES[i].id;
       }
     }
     return str;

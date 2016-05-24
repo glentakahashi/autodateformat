@@ -16,13 +16,13 @@ import {SegmentTypeComponent} from './segment-type.component';
 })
 export class SegmentComponent {
   public setSelected(segment: Segment, segmentType: SegmentType): void {
-    segment.setSelectedName(segmentType.getName());
+    segment.setSelectedID(segmentType.getID());
   }
 
   public isSelected(segment: Segment, segmentType: SegmentType): boolean {
     if (!segment.getSelected()) {
       return false;
     }
-    return segment.getSelected().name === segmentType.getName();
+    return segment.getSelectedType().id === segmentType.getID();
   }
 }

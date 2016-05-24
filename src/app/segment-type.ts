@@ -3,10 +3,7 @@ import {Timezones} from './timezones';
 import {SegmentTypeSettings} from './segment-type-settings';
 import {BooleanSegmentTypeSetting, StringSegmentTypeSetting, DropdownSegmentTypeSetting} from './segment-type-setting';
 
-// TODO: refactor getters and setters to have more consistent names
-
-// TODO: refactor name into label, change label to be "Human name"
-// Add an "ID" field which is an ENUM
+// TODO: refactor getters and setters to have more consistent ids
 
 // TODO: define a "split" verb and a "join" verb to combine two segments? It must do it automatically?
 // i.e. -102034 = Timezone by default, be able to split into -, 102034.
@@ -19,8 +16,8 @@ interface ZeroPaddedSegmentType {
 }
 
 export abstract class SegmentType {
-  // TODO: does this conflict with native name parameter in ES6?
-  public static name: string;
+  public static id: string;
+  public static label: string;
 
   protected settings: SegmentTypeSettings;
   protected valid: boolean = false;
@@ -57,11 +54,16 @@ export abstract class SegmentType {
     return this.settings;
   }
 
-  public getName(): string {
-    // This is the only way to get this to work without compile errors
-    /* tslint:disable:no-string-literal */
-    return this.constructor['name'];
-    /* tslint:enable:no-string-literal */
+  public getLabel(): string {
+    return this.getStaticElement('label');
+  }
+
+  public getID(): string {
+    return this.getStaticElement('id');
+  }
+
+  private getStaticElement(id: string): any {
+    return this.constructor[id];
   }
 }
 
@@ -79,22 +81,20 @@ export abstract class StringSegmentType extends SegmentType {
       [CaseStyle.Lower]: "lower",
       [CaseStyle.Upper]: "UPPER",
       [CaseStyle.Title]: "Title",
-      [CaseStyle.Unknown]: "Unknown",
     };
     this.settings.add(new DropdownSegmentTypeSetting("caseStyle", "Case Style", null, CaseStyle.Title, styles));
     this.setCaseStyle(token);
   }
 
+  // XXX: Title should be default?
   public static parseCaseStyle(str: string): CaseStyle {
     if (/^[a-z]+$/.test(str)) {
       return CaseStyle.Lower;
     } else if (/^[A-Z]+$/.test(str)) {
       return CaseStyle.Upper;
-    } else if (/^[A-Z][a-z]+$/.test(str)) {
+    } else {
       return CaseStyle.Title;
     }
-    // TODO: make this n/a or something?
-    return CaseStyle.Unknown;
   }
 
   public setCaseStyle(token: string) {
@@ -109,7 +109,8 @@ export abstract class StringSegmentType extends SegmentType {
 export class ShortDaySegmentType extends StringSegmentType {
   public static SHORT_DAYS: string[] = ["mon", "tues", "tue", "wed", "thu", "thurs", "fri", "sat", "sun"];
 
-  public name = "ShortDay";
+  public static id = "ShortDay";
+  public static label = "Abbreviated Day";
 
   constructor(token: string) {
     super(token);
@@ -121,9 +122,10 @@ export class ShortDaySegmentType extends StringSegmentType {
 }
 
 export class LongDaySegmentType extends StringSegmentType {
-  private static DAYS: string[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+  public static id = "LongDay";
+  public static label = "Full Day";
 
-  public name = "LongDay";
+  private static DAYS: string[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
   constructor(token: string) {
     super(token);
@@ -140,7 +142,8 @@ export class ShortMonthSegmentType extends StringSegmentType {
     "jul", "aug", "sep", "sept", "oct", "nov", "dec",
   ];
 
-  public name = "ShortMonth";
+  public static id = "ShortMonth";
+  public static label = "Abbreviated Month";
 
   constructor(token: string) {
     super(token);
@@ -157,7 +160,8 @@ export class LongMonthSegmentType extends StringSegmentType {
     "july", "august", "september", "october", "november", "december",
   ];
 
-  public name = "LongMonth";
+  public static id = "LongMonth";
+  public static label = "Full Month";
 
   constructor(token: string) {
     super(token);
@@ -171,7 +175,8 @@ export class LongMonthSegmentType extends StringSegmentType {
 export class DaySegmentType extends StringSegmentType implements ZeroPaddedSegmentType {
   public static DATE_ENDINGS: string[] = ["st", "nd", "rd", "th"];
 
-  public name = "Day";
+  public static id = "Day";
+  public static label = "Day";
 
   constructor(token: string) {
     super(token);
@@ -179,7 +184,7 @@ export class DaySegmentType extends StringSegmentType implements ZeroPaddedSegme
       "leadingZero", "Leading Zero", "Whether or not the day is padded with a leading zero.", true
     ));
     this.settings.add(new BooleanSegmentTypeSetting(
-      "prettyEnding", "Pretty Ending", "Whether or not the day is suffixed with 'st', 'nd', 'rd', and 'th'.", false
+      "prettyEnding", "Pretty Ending", "Whether or not the day is suffixed with 'st', 'nd', 'rd' and 'th'.", false
     ));
     let ending: string;
     if (token.length === 3) {
@@ -215,7 +220,8 @@ export class DaySegmentType extends StringSegmentType implements ZeroPaddedSegme
 }
 
 export class MonthSegmentType extends SegmentType implements ZeroPaddedSegmentType {
-  public name = "Month";
+  public static id = "Month";
+  public static label = "Month";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -236,7 +242,8 @@ export class MonthSegmentType extends SegmentType implements ZeroPaddedSegmentTy
 
 // For the sake of usability, this assumes you never have a 1-3 digit year.
 export class YearSegmentType extends SegmentType implements ZeroPaddedSegmentType {
-  public name = "Year";
+  public static id = "Year";
+  public static label = "Year";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -253,7 +260,8 @@ export class YearSegmentType extends SegmentType implements ZeroPaddedSegmentTyp
 }
 
 export class ShortYearSegmentType extends SegmentType implements ZeroPaddedSegmentType {
-  public name = "ShortYear";
+  public static id = "ShortYear";
+  public static label = "2 Digit Year";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -272,7 +280,8 @@ export class ShortYearSegmentType extends SegmentType implements ZeroPaddedSegme
 
 // I don't think this should ever be non-24 hour
 export class HourMinuteSegmentType extends SegmentType {
-  public name = "HourMinute";
+  public static id = "HourMinute";
+  public static label = "Hour and Minute";
   constructor(token: string) {
     super(token);
     if (token.length === 4 && Utils.isNumber(token)) {
@@ -283,7 +292,8 @@ export class HourMinuteSegmentType extends SegmentType {
 
 // I don't think this should ever be non-24 hour
 export class HourMinuteSecondSegmentType extends SegmentType {
-  public name = "HourMinuteSecond";
+  public static id = "HourMinuteSecond";
+  public static label = "Hour, Minute and Second";
   constructor(token: string) {
     super(token);
     if (token.length === 6 && Utils.isNumber(token)) {
@@ -293,7 +303,8 @@ export class HourMinuteSecondSegmentType extends SegmentType {
 }
 
 export class YearMonthDaySegmentType extends SegmentType {
-  public name = "YearMonthDay";
+  public static id = "YearMonthDay";
+  public static label = "Year, Month and Day";
   constructor(token: string) {
     super(token);
     if (token.length === 8 && Utils.isNumber(token)) {
@@ -303,7 +314,8 @@ export class YearMonthDaySegmentType extends SegmentType {
 }
 
 export class YearMonthDayHourMinuteSegmentType extends SegmentType {
-  public name = "YearMonthDayHourMinute";
+  public static id = "YearMonthDayHourMinute";
+  public static label = "Year, Month, Day, Hour and Minute";
   constructor(token: string) {
     super(token);
     if (token.length === 12 && Utils.isNumber(token)) {
@@ -313,7 +325,8 @@ export class YearMonthDayHourMinuteSegmentType extends SegmentType {
 }
 
 export class YearMonthDayHourMinuteSecondSegmentType extends SegmentType {
-  public name = "YearMonthDayHourMinuteSecond";
+  public static id = "YearMonthDayHourMinuteSecond";
+  public static label = "Year, Month, Day, Hour, Minute and Second";
   constructor(token: string) {
     super(token);
     if (token.length === 14 && Utils.isNumber(token)) {
@@ -331,7 +344,8 @@ export class MultiSegment extends SegmentType {
 }
 
 export class HourSegmentType extends SegmentType implements ZeroPaddedSegmentType {
-  public name = "Hour";
+  public static id = "Hour";
+  public static label = "Hour";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -365,7 +379,8 @@ export class HourSegmentType extends SegmentType implements ZeroPaddedSegmentTyp
 }
 
 export class MinuteSegmentType extends SegmentType implements ZeroPaddedSegmentType {
-  public name = "Minute";
+  public static id = "Minute";
+  public static label = "Minute";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -385,7 +400,8 @@ export class MinuteSegmentType extends SegmentType implements ZeroPaddedSegmentT
 }
 
 export class SecondSegmentType extends SegmentType implements ZeroPaddedSegmentType {
-  public name = "Second";
+  public static id = "Second";
+  public static label = "Second";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -405,7 +421,8 @@ export class SecondSegmentType extends SegmentType implements ZeroPaddedSegmentT
 }
 
 export class MillisecondSegmentType extends SegmentType {
-  public name = "Millisecond";
+  public static id = "Millisecond";
+  public static label = "Millisecond";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -423,7 +440,8 @@ export class MillisecondSegmentType extends SegmentType {
 export class AMPMSegmentType extends StringSegmentType {
   public static AMPM: string[] = ["am", "a", "pm", "p"];
 
-  public name = "AMPM";
+  public static id = "AMPM";
+  public static label = "AM/PM";
 
   constructor(token: string) {
     super(token);
@@ -435,7 +453,8 @@ export class AMPMSegmentType extends StringSegmentType {
 }
 
 export class ShortTimezoneSegmentType extends StringSegmentType {
-  public name = "ShortTimezone";
+  public static id = "ShortTimezone";
+  public static label = "Abbreviated Timezone";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting("z", "Z", null, false));
@@ -450,7 +469,8 @@ export class ShortTimezoneSegmentType extends StringSegmentType {
 }
 
 export class LongTimezoneSegmentType extends StringSegmentType {
-  public name = "LongTimezone";
+  public static id = "LongTimezone";
+  public static label = "Full Timezone";
   constructor(token: string) {
     super(token);
     if (Timezones.TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
@@ -461,7 +481,7 @@ export class LongTimezoneSegmentType extends StringSegmentType {
 }
 
 export enum TimezoneOffsetType {
-  // TODO: rename to "Necessary precision??" Does anything use an "Hour only" timezone, given that there are things that are 1:30, 5:45, etc.
+  // TODO: reid to "Necessary precision??" Does anything use an "Hour only" timezone, given that there are things that are 1:30, 5:45, etc.
   // US uses things like -3 CST or -3 EST or  stuff??
   Hour, // +-XX
   HourMinute, // +-XXXX
@@ -471,7 +491,8 @@ export enum TimezoneOffsetType {
 };
 
 export class TimezoneOffsetSegmentType extends SegmentType {
-  public name = "TimezoneOffset";
+  public static id = "TimezoneOffset";
+  public static label = "Timezone Offset";
 
   // XXX: What is this???
   // private rfc: boolean = false;
@@ -510,7 +531,8 @@ export class TimezoneOffsetSegmentType extends SegmentType {
 }
 
 export class EpochSegmentType extends SegmentType {
-  public name = "Epoch";
+  public static id = "Epoch";
+  public static label = "Unix Epoch";
   constructor(token: string) {
     super(token);
     this.settings.add(new BooleanSegmentTypeSetting(
@@ -523,14 +545,23 @@ export class EpochSegmentType extends SegmentType {
       this.valid = true;
     }
   }
+
+  public getMilliseconds(): boolean {
+    return this.settings.get("milliseconds").getValue();
+  }
 }
 
 export class FillSegmentType extends SegmentType {
-  public name = "Fill";
+  public static id = "Fill";
+  public static label = "Plain Text";
   constructor(token: string) {
     super(token);
     this.settings.add(new StringSegmentTypeSetting("token", "String", "The content of the fill", token));
     this.valid = true;
+  }
+
+  public getToken(): string {
+    return this.settings.get("token").getValue();
   }
 }
 

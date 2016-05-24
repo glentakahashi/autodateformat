@@ -22,7 +22,7 @@ export class DateTime {
     for (let i = 0; i < this.segments.length; i++) {
       let enabledTypes: SegmentType[] = this.segments[i].getEnabledTypes();
       if (enabledTypes.length > 0) {
-        this.segments[i].setSelectedName(enabledTypes[0].getName());
+        this.segments[i].setSelectedID(enabledTypes[0].getID());
       }
     }
   }
@@ -47,7 +47,7 @@ export class DateTime {
     $('#edit-segment-modal .btn-primary').click(() => {
       let val = $('#edit-segment-modal input').val();
       let newSegment: Segment = new Segment(val);
-      newSegment.setSelected(segment.getSelected());
+      newSegment.setSelected(segment.getSelectedType());
       if (newSegment.getSelected() === null) {
         newSegment.setSelected(FillSegmentType);
       }
@@ -307,8 +307,8 @@ export class DateTime {
     for (let i = 0; i < segments.length; i++) {
       // Combine two fill if consecutive
       if (i + 1 < segments.length &&
-          segments[i].getOnlySegmentType() !== null && segments[i].getOnlySegmentType().getName() === FillSegmentType.name &&
-          segments[i + 1].getOnlySegmentType() !== null && segments[i + 1].getOnlySegmentType().getName() === FillSegmentType.name) {
+          segments[i].getOnlySegmentType() !== null && segments[i].getOnlySegmentType().getID() === FillSegmentType.id &&
+          segments[i + 1].getOnlySegmentType() !== null && segments[i + 1].getOnlySegmentType().getID() === FillSegmentType.id) {
         segments.splice(i, 2, new Segment(segments[i].getToken() + segments[i + 1].getToken()));
         i -= 1;
         continue;
