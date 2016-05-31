@@ -28,8 +28,8 @@ export class StringSegmentTypeSettingComponent {
   pipes: [MapToIterable],
   selector: 'dropdownSegmentTypeSetting',
   template: `
+    <label attr.title="{{segmentTypeSetting.getHelpText()}}">{{segmentTypeSetting.label}}</label>
     <select class="segmentTypeSetting dropdownSetting" [(ngModel)]="segmentTypeSetting.value">
-      <label attr.title="{{segmentTypeSetting.getHelpText()}}">{{segmentTypeSetting.label}}</label>
       <option *ngFor="#possibleValue of segmentTypeSetting.possibleValues | mapToIterable" [value]="possibleValue.key">
         {{possibleValue.val}}
       </option>

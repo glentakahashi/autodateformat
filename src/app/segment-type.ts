@@ -106,69 +106,61 @@ export abstract class StringSegmentType extends SegmentType {
   }
 }
 
-export class ShortDaySegmentType extends StringSegmentType {
-  public static SHORT_DAYS: string[] = ["mon", "tues", "tue", "wed", "thu", "thurs", "fri", "sat", "sun"];
+export class DayOfWeekSegmentType extends StringSegmentType {
+  public static id = "DayOfWee";
+  public static label = "Day Of Week";
 
-  public static id = "ShortDay";
-  public static label = "Abbreviated Day";
-
-  constructor(token: string) {
-    super(token);
-    if (ShortDaySegmentType.SHORT_DAYS.indexOf(token.toLowerCase()) !== -1) {
-      this.setCaseStyle(token);
-      this.valid = true;
-    }
-  }
-}
-
-export class LongDaySegmentType extends StringSegmentType {
-  public static id = "LongDay";
-  public static label = "Full Day";
-
+  private static SHORT_DAYS: string[] = ["mon", "tues", "tue", "wed", "thu", "thurs", "fri", "sat", "sun"];
   private static DAYS: string[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
   constructor(token: string) {
     super(token);
-    if (LongDaySegmentType.DAYS.indexOf(token.toLowerCase()) !== -1) {
+    this.settings.add(new BooleanSegmentTypeSetting("abbreviated", "Abbreviated", "Abbreviate the name (i.e. Mon,Tues,Wed)", true));
+    if (DayOfWeekSegmentType.SHORT_DAYS.indexOf(token.toLowerCase()) !== -1) {
       this.setCaseStyle(token);
+      this.settings.setValue("abbreviated", true);
+      this.valid = true;
+    } else if (DayOfWeekSegmentType.DAYS.indexOf(token.toLowerCase()) !== -1) {
+      this.setCaseStyle(token);
+      this.settings.setValue("abbreviated", false);
       this.valid = true;
     }
   }
+
+  public isAbbreviated(): boolean {
+    return this.settings.get("abbreviated").getValue();
+  }
 }
 
-export class ShortMonthSegmentType extends StringSegmentType {
-  public static SHORT_MONTHS: string[] = [
+export class TextMonthSegmentType extends StringSegmentType {
+  public static id = "TextMonth";
+  public static label = "Text Month";
+
+  private static SHORT_MONTHS: string[] = [
     "jan", "feb", "mar", "apr", "may", "jun",
     "jul", "aug", "sep", "sept", "oct", "nov", "dec",
   ];
-
-  public static id = "ShortMonth";
-  public static label = "Abbreviated Month";
-
-  constructor(token: string) {
-    super(token);
-    if (ShortMonthSegmentType.SHORT_MONTHS.indexOf(token.toLowerCase()) !== -1) {
-      this.setCaseStyle(token);
-      this.valid = true;
-    }
-  }
-}
-
-export class LongMonthSegmentType extends StringSegmentType {
-  public static MONTHS: string[] = [
+  private static MONTHS: string[] = [
     "january", "february", "march", "april", "may", "june",
     "july", "august", "september", "october", "november", "december",
   ];
 
-  public static id = "LongMonth";
-  public static label = "Full Month";
-
   constructor(token: string) {
     super(token);
-    if (LongMonthSegmentType.MONTHS.indexOf(token.toLowerCase()) !== -1) {
+    this.settings.add(new BooleanSegmentTypeSetting("abbreviated", "Abbreviated", "Abbreviate the name (i.e. Mon,Tues,Wed)", true));
+    if (TextMonthSegmentType.SHORT_MONTHS.indexOf(token.toLowerCase()) !== -1) {
       this.setCaseStyle(token);
+      this.settings.setValue("abbreviated", true);
+      this.valid = true;
+    } else if (TextMonthSegmentType.MONTHS.indexOf(token.toLowerCase()) !== -1) {
+      this.setCaseStyle(token);
+      this.settings.setValue("abbreviated", false);
       this.valid = true;
     }
+  }
+
+  public isAbbreviated(): boolean {
+    return this.settings.get("abbreviated").getValue();
   }
 }
 
@@ -199,12 +191,12 @@ export class DaySegmentType extends StringSegmentType implements ZeroPaddedSegme
     }
     if ((token.length === 2 || token.length === 1) && Utils.isNumber(token) && parseInt(token, 10) >= 1 && parseInt(token, 10) <= 31) {
       if (token.length === 1) {
-        this.settings.set("leadingZero", false);
+        this.settings.setValue("leadingZero", false);
       }
       this.valid = true;
     }
     if (ending && DaySegmentType.DATE_ENDINGS.indexOf(ending.toLowerCase()) !== -1) {
-      this.settings.set("prettyEnding", true);
+      this.settings.setValue("prettyEnding", true);
     } else if (ending && DaySegmentType.DATE_ENDINGS.indexOf(ending.toLowerCase()) === -1) {
       this.valid = false;
     }
@@ -229,7 +221,7 @@ export class MonthSegmentType extends SegmentType implements ZeroPaddedSegmentTy
     ));
     if ((token.length === 2 || token.length === 1) && Utils.isNumber(token) && parseInt(token, 10) >= 1 && parseInt(token, 10) <= 12) {
       if (token.length === 1) {
-        this.settings.set("leadingZero", false);
+        this.settings.setValue("leadingZero", false);
       }
       this.valid = true;
     }
@@ -240,7 +232,7 @@ export class MonthSegmentType extends SegmentType implements ZeroPaddedSegmentTy
   }
 }
 
-// For the sake of usability, this assumes you never have a 1-3 digit year.
+// For the sake of usability, this assumes dates after 1970.
 export class YearSegmentType extends SegmentType implements ZeroPaddedSegmentType {
   public static id = "Year";
   public static label = "Year";
@@ -249,7 +241,13 @@ export class YearSegmentType extends SegmentType implements ZeroPaddedSegmentTyp
     this.settings.add(new BooleanSegmentTypeSetting(
       "leadingZeroes", "Leading Zeroes", "Whether or not the year is padded with leading zeroes.", true
     ));
-    if (token.length === 4 && Utils.isNumber(token)) {
+    this.settings.add(new BooleanSegmentTypeSetting(
+      "twoDigit", "Two Digit", "Abbreviate the year to the last two digits.", false
+    ));
+    if ((token.length === 4 || token.length === 2) && Utils.isNumber(token)) {
+      if (token.length === 2) {
+        this.settings.setValue("twoDigit", true);
+      }
       this.valid = true;
     }
   }
@@ -257,28 +255,13 @@ export class YearSegmentType extends SegmentType implements ZeroPaddedSegmentTyp
   public isZeroPadded(): boolean {
     return this.settings.get("leadingZeroes").getValue();
   }
-}
 
-export class ShortYearSegmentType extends SegmentType implements ZeroPaddedSegmentType {
-  public static id = "ShortYear";
-  public static label = "2 Digit Year";
-  constructor(token: string) {
-    super(token);
-    this.settings.add(new BooleanSegmentTypeSetting(
-      // What kind of fool uses non-zero padded short-year?
-      "leadingZero", "Leading Zero", "Whether or not the year is padded with a leading zero.", true
-    ));
-    if (token.length === 2 && Utils.isNumber(token)) {
-      this.valid = true;
-    }
-  }
-
-  public isZeroPadded(): boolean {
-    return this.settings.get("leadingZero").getValue();
+  public isTwoDigit(): boolean {
+    return this.settings.get("twoDigit").getValue();
   }
 }
 
-// I don't think this should ever be non-24 hour
+// Should always be 24hour
 export class HourMinuteSegmentType extends SegmentType {
   public static id = "HourMinute";
   public static label = "Hour and Minute";
@@ -290,7 +273,7 @@ export class HourMinuteSegmentType extends SegmentType {
   }
 }
 
-// I don't think this should ever be non-24 hour
+// Should always be 24hour
 export class HourMinuteSecondSegmentType extends SegmentType {
   public static id = "HourMinuteSecond";
   public static label = "Hour, Minute and Second";
@@ -335,14 +318,6 @@ export class YearMonthDayHourMinuteSecondSegmentType extends SegmentType {
   }
 }
 
-
-// TODO: multisegment = things that are together
-// split 19930822 into Y/m/d, y/m/d, h/m/s
-// if length 8, use other stuff
-// for example, when writing files to disk i do stuff like 20160103080405
-export class MultiSegment extends SegmentType {
-}
-
 export class HourSegmentType extends SegmentType implements ZeroPaddedSegmentType {
   public static id = "Hour";
   public static label = "Hour";
@@ -356,17 +331,17 @@ export class HourSegmentType extends SegmentType implements ZeroPaddedSegmentTyp
     ));
     if ((token.length === 2 || token.length === 1) && Utils.isNumber(token)) {
       if (token.length === 1) {
-        this.settings.set("leadingZeroes", false);
+        this.settings.setValue("leadingZeroes", false);
       }
       if (parseInt(token, 10) > 12 || token === "00") {
-        this.settings.set("twentyFour", true);
+        this.settings.setValue("twentyFour", true);
       }
       this.valid = true;
     }
   }
 
   public setTwentyFour(value: boolean) {
-    this.settings.set("twentyFour", value);
+    this.settings.setValue("twentyFour", value);
   }
 
   public getTwentyFour(): boolean {
@@ -388,7 +363,7 @@ export class MinuteSegmentType extends SegmentType implements ZeroPaddedSegmentT
     ));
     if ((token.length === 2 || token.length === 1) && Utils.isNumber(token) && parseInt(token, 10) >= 0 && parseInt(token, 10) < 60) {
       if (token.length === 1) {
-        this.settings.set("leadingZeroes", false);
+        this.settings.setValue("leadingZeroes", false);
       }
       this.valid = true;
     }
@@ -409,7 +384,7 @@ export class SecondSegmentType extends SegmentType implements ZeroPaddedSegmentT
     ));
     if ((token.length === 2 || token.length === 1) && Utils.isNumber(token) && parseInt(token, 10) >= 0 && parseInt(token, 10) < 60) {
       if (token.length === 1) {
-        this.settings.set("leadingZeroes", false);
+        this.settings.setValue("leadingZeroes", false);
       }
       this.valid = true;
     }
@@ -420,20 +395,38 @@ export class SecondSegmentType extends SegmentType implements ZeroPaddedSegmentT
   }
 }
 
-export class MillisecondSegmentType extends SegmentType {
-  public static id = "Millisecond";
-  public static label = "Millisecond";
+export enum SecondFractionType {
+  Milliseconds,
+  Microseconds,
+  Nanoseconds,
+}
+
+export class SecondFractionSegmentType extends SegmentType {
+  public static id = "SecondFraction";
+  public static label = "Second Fraction";
   constructor(token: string) {
     super(token);
-    this.settings.add(new BooleanSegmentTypeSetting(
-      "nanoseconds", "Nanoseconds", "If this is nanoseconds or not.", false
+    this.settings.add(new DropdownSegmentTypeSetting(
+      "precision", "Precision", "Precision to display.", token.length, {
+        [SecondFractionType.Milliseconds]: 'Milliseconds',
+        [SecondFractionType.Microseconds]: 'Microseconds',
+        [SecondFractionType.Nanoseconds]: 'Nanoseconds',
+      }
     ));
     if (Utils.isNumber(token)) {
-      this.valid = true;
-      if (token.length > 3) {
-        this.settings.set("nanoseconds", true);
+      if (token.length > 6) {
+        this.settings.setValue("precision", SecondFractionType.Nanoseconds);
+      } else if (token.length > 3) {
+        this.settings.setValue("precision", SecondFractionType.Microseconds);
+      } else {
+        this.settings.setValue("precision", SecondFractionType.Milliseconds);
       }
+      this.valid = true;
     }
+  }
+
+  public getPrecision(): number {
+    return this.settings.get("precision").getValue();
   }
 }
 
@@ -452,47 +445,17 @@ export class AMPMSegmentType extends StringSegmentType {
   }
 }
 
-export class ShortTimezoneSegmentType extends StringSegmentType {
-  public static id = "ShortTimezone";
-  public static label = "Abbreviated Timezone";
-  constructor(token: string) {
-    super(token);
-    this.settings.add(new BooleanSegmentTypeSetting("z", "Z", null, false));
-    if (Timezones.SHORT_TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
-      if (token.toLowerCase() === "z") {
-        this.settings.set("z", true);
-      }
-      this.setCaseStyle(token);
-      this.valid = true;
-    }
-  }
-}
-
-export class LongTimezoneSegmentType extends StringSegmentType {
-  public static id = "LongTimezone";
-  public static label = "Full Timezone";
-  constructor(token: string) {
-    super(token);
-    if (Timezones.TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
-      this.setCaseStyle(token);
-      this.valid = true;
-    }
-  }
-}
-
-export enum TimezoneOffsetType {
-  // TODO: reid to "Necessary precision??" Does anything use an "Hour only" timezone, given that there are things that are 1:30, 5:45, etc.
-  // US uses things like -3 CST or -3 EST or  stuff??
+export enum TimezoneType {
   Hour, // +-XX
-  HourMinute, // +-XXXX
-  HourMinuteSecond, // +-XXXXXX
+  HourMinute, // +-XXXX (Z Default)
   HourMinuteSeparated, // +-XX:XX
-  HourMinuteSecondSeparated // +-XX:XX:XX
+  Short, // GMT
+  Long, // America/Pacific
 };
 
-export class TimezoneOffsetSegmentType extends SegmentType {
-  public static id = "TimezoneOffset";
-  public static label = "Timezone Offset";
+export class TimezoneSegmentType extends SegmentType {
+  public static id = "Timezone";
+  public static label = "Timezone ";
 
   // XXX: What is this???
   // private rfc: boolean = false;
@@ -500,33 +463,33 @@ export class TimezoneOffsetSegmentType extends SegmentType {
   constructor(token: string) {
     super(token);
     let types: { [id: number]: string } = {
-      [TimezoneOffsetType.Hour]: "+-XX",
-      [TimezoneOffsetType.HourMinute]: "+-XXXX",
-      [TimezoneOffsetType.HourMinuteSecond]: "+-XXXXXX",
-      [TimezoneOffsetType.HourMinuteSeparated]: "+-XX:XX",
-      [TimezoneOffsetType.HourMinuteSecondSeparated]: "+-XX:XX:XX",
+      [TimezoneType.Hour]: "+-XX",
+      [TimezoneType.HourMinute]: "+-XXXX or Zulu (Z)",
+      [TimezoneType.HourMinuteSeparated]: "+-XX:XX",
+      [TimezoneType.Short]: "PST/GMT/CEST etc.",
+      [TimezoneType.Long]: "America/Pacific, etc.",
     };
     this.settings.add(new DropdownSegmentTypeSetting(
-      "timezoneOffsetType", "Timezone Offset Type", null, TimezoneOffsetType.HourMinute, types
+      "timezoneType", "Timezone  Type", null, TimezoneType.HourMinute, types
     ));
-    if (/^[-+](\d\d)((:\d\d){1,2}|(\d\d){1,2})?$/.test(token)) {
-      if (/^[-+]\d{2}$/.test(token)) {
-        this.settings.set("timezoneOffsetType", TimezoneOffsetType.Hour);
-      } else if (/^[-+]\d{4}$/.test(token)) {
-        this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinute);
-      } else if (/^[-+]\d{6}$/.test(token)) {
-        this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinuteSecond);
-      } else if (/^[-+]\d\d:\d\d$/.test(token)) {
-        this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinuteSeparated);
-      } else if (/^[-+]\d\d:\d\d:\d\d$/.test(token)) {
-        this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinuteSecondSeparated);
-      }
-      this.valid = true;
+    this.valid = true;
+    if (/^[-+]\d{2}$/.test(token)) {
+      this.settings.setValue("timezoneType", TimezoneType.Hour);
+    } else if (token.toLowerCase() === 'z' || /^[-+]\d{4}$/.test(token)) {
+      this.settings.setValue("timezoneType", TimezoneType.HourMinute);
+    } else if (/^[-+]\d\d:\d\d$/.test(token)) {
+      this.settings.setValue("timezoneType", TimezoneType.HourMinuteSeparated);
+    } else if (Timezones.SHORT_TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
+      this.settings.setValue("timezoneType", TimezoneType.Short);
+    } else if (Timezones.TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
+      this.settings.setValue("timezoneType", TimezoneType.Long);
+    } else {
+      this.valid = false;
     }
   }
 
-  public getTimezoneOffsetType(): number {
-    return parseInt(this.settings.get("timezoneOffsetType").getValue(), 10);
+  public getTimezoneType(): number {
+    return parseInt(this.settings.get("timezoneType").getValue(), 10);
   }
 }
 
@@ -540,7 +503,7 @@ export class EpochSegmentType extends SegmentType {
     ));
     if (Utils.isNumber(token)) {
       if (parseInt(token, 10) > 2147483647) {
-        this.settings.set("milliseconds", true);
+        this.settings.setValue("milliseconds", true);
       }
       this.valid = true;
     }
@@ -566,14 +529,11 @@ export class FillSegmentType extends SegmentType {
 }
 
 export const SEGMENT_TYPES: (typeof SegmentType)[] = [
-  ShortDaySegmentType, LongDaySegmentType, DaySegmentType,
-  ShortMonthSegmentType, LongMonthSegmentType, MonthSegmentType,
-  YearSegmentType, ShortYearSegmentType,
+  DayOfWeekSegmentType, DaySegmentType, TextMonthSegmentType, MonthSegmentType,
+  YearSegmentType, HourSegmentType, MinuteSegmentType,
+  SecondSegmentType, SecondFractionSegmentType, AMPMSegmentType,
+  TimezoneSegmentType, EpochSegmentType, FillSegmentType,
   // Combined segments
   HourMinuteSegmentType, HourMinuteSecondSegmentType, YearMonthDaySegmentType,
   YearMonthDayHourMinuteSegmentType, YearMonthDayHourMinuteSecondSegmentType,
-  HourSegmentType, MinuteSegmentType,
-  SecondSegmentType, MillisecondSegmentType, AMPMSegmentType,
-  ShortTimezoneSegmentType, LongTimezoneSegmentType, TimezoneOffsetSegmentType,
-  EpochSegmentType, FillSegmentType,
 ];

@@ -555,6 +555,6 @@ export class Timezones {
     "omst", "orat", "pdt", "pet", "pett", "pgt", "phot", "pkt", "pmdt", "pmst", "pont", "pst", "pst", "pyst", "pyt", "ret", "rott", "sakt",
     "samt", "sast", "sbt", "sct", "sgt", "slst", "sret", "srt", "sst", "sst", "syot", "taht", "tha", "tft", "tjt", "tkt", "tlt", "tmt",
     "tot", "tvt", "uct", "ulat", "usz1", "utc", "uyst", "uyt", "uzt", "vet", "vlat", "volt", "vost", "vut", "wakt", "wast", "wat", "wedt",
-    "west", "wet", "wit", "wst", "yakt", "yekt", "z",
+    "west", "wet", "wit", "wst", "yakt", "yekt",
   ];
 }

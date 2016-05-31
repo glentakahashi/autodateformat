@@ -2,15 +2,13 @@ import {DateTime} from '../datetime';
 import {DateFormatSegment} from './dateformat-segment';
 import {Segment} from '../segment';
 import {
-  CaseStyle, TimezoneOffsetType, SegmentType,
-  ShortDaySegmentType, LongDaySegmentType,
-  ShortMonthSegmentType, LongMonthSegmentType, DaySegmentType,
-  MonthSegmentType, YearSegmentType, YearMonthDaySegmentType, ShortYearSegmentType,
+  CaseStyle, SecondFractionType, TimezoneType, SegmentType,
+  DayOfWeekSegmentType, TextMonthSegmentType, DaySegmentType,
+  MonthSegmentType, YearSegmentType, YearMonthDaySegmentType,
   YearMonthDayHourMinuteSegmentType, YearMonthDayHourMinuteSecondSegmentType,
   HourMinuteSegmentType, HourMinuteSecondSegmentType, HourSegmentType,
-  MinuteSegmentType, SecondSegmentType, MillisecondSegmentType,
-  AMPMSegmentType, ShortTimezoneSegmentType, LongTimezoneSegmentType,
-  TimezoneOffsetSegmentType, EpochSegmentType, FillSegmentType,
+  MinuteSegmentType, SecondSegmentType, SecondFractionSegmentType,
+  AMPMSegmentType, TimezoneSegmentType, EpochSegmentType, FillSegmentType,
 } from '../segment-type';
 
 class UnhandledSegmentTypeError extends Error {
@@ -20,34 +18,28 @@ class UnhandledSegmentTypeError extends Error {
 }
 
 export abstract class DateFormat {
+  protected static label: string;
+
   protected datetime: DateTime;
 
   constructor(datetime: DateTime) {
     this.datetime = datetime;
   }
 
-  public getFormat(): DateFormatSegment[] {
+  public getSegments(): DateFormatSegment[] {
     let format: DateFormatSegment[] = [];
     let segments: Segment[] = this.datetime.getSegments();
     let segmentType;
     for (let i = 0; i < segments.length; i++) {
       let segment = segments[i];
       switch (segment.getSelectedType()) {
-        case ShortDaySegmentType:
-          segmentType = segment.getSelected() as ShortDaySegmentType;
-          format.push(this.getShortDayFormat(segmentType.getCaseStyle()));
+        case DayOfWeekSegmentType:
+          segmentType = segment.getSelected() as DayOfWeekSegmentType;
+          format.push(this.getDayOfWeekFormat(segmentType.getCaseStyle(), segmentType.isAbbreviated()));
           break;
-        case LongDaySegmentType:
-          segmentType = segment.getSelected() as LongDaySegmentType;
-          format.push(this.getLongDayFormat(segmentType.getCaseStyle()));
-          break;
-        case ShortMonthSegmentType:
-          segmentType = segment.getSelected() as ShortMonthSegmentType;
-          format.push(this.getShortMonthFormat(segmentType.getCaseStyle()));
-          break;
-        case LongMonthSegmentType:
-          segmentType = segment.getSelected() as LongMonthSegmentType;
-          format.push(this.getLongMonthFormat(segmentType.getCaseStyle()));
+        case TextMonthSegmentType:
+          segmentType = segment.getSelected() as TextMonthSegmentType;
+          format.push(this.getTextMonthFormat(segmentType.getCaseStyle(), segmentType.isAbbreviated()));
           break;
         case DaySegmentType:
           segmentType = segment.getSelected() as DaySegmentType;
@@ -59,7 +51,7 @@ export abstract class DateFormat {
           break;
         case YearSegmentType:
           segmentType = segment.getSelected() as YearSegmentType;
-          format.push(this.getYearFormat(segmentType.isZeroPadded()));
+          format.push(this.getYearFormat(segmentType.isZeroPadded(), segmentType.isTwoDigit()));
           break;
         case YearMonthDaySegmentType:
           format.push(this.getYearMonthDayFormat());
@@ -69,10 +61,6 @@ export abstract class DateFormat {
           break;
         case YearMonthDayHourMinuteSecondSegmentType:
           format.push(this.getYearMonthDayHourMinuteSecondFormat());
-          break;
-        case ShortYearSegmentType:
-          segmentType = segment.getSelected() as ShortYearSegmentType;
-          format.push(this.getShortYearFormat(segmentType.isZeroPadded()));
           break;
         case HourMinuteSegmentType:
           format.push(this.getHourMinuteFormat());
@@ -92,38 +80,31 @@ export abstract class DateFormat {
           segmentType = segment.getSelected() as SecondSegmentType;
           format.push(this.getSecondFormat(segmentType.isZeroPadded()));
           break;
-        case MillisecondSegmentType:
-          format.push(this.getMillisecondFormat());
+        case SecondFractionSegmentType:
+          segmentType = segment.getSelected() as SecondFractionSegmentType;
+          format.push(this.getSecondFractionFormat(segmentType.getPrecision()));
           break;
         case AMPMSegmentType:
           segmentType = segment.getSelected() as AMPMSegmentType;
           format.push(this.getAMPMFormat(segmentType.getCaseStyle()));
           break;
-        case ShortTimezoneSegmentType:
-          segmentType = segment.getSelected() as ShortTimezoneSegmentType;
-          format.push(this.getShortTimezoneFormat(segmentType.getCaseStyle()));
-          break;
-        case LongTimezoneSegmentType:
-          segmentType = segment.getSelected() as LongTimezoneSegmentType;
-          format.push(this.getLongTimezoneFormat(segmentType.getCaseStyle()));
-          break;
-        case TimezoneOffsetSegmentType:
-          segmentType = segment.getSelected() as TimezoneOffsetSegmentType;
-          switch (segmentType.getTimezoneOffsetType()) {
-            case TimezoneOffsetType.Hour:
-              format.push(this.getTimezoneOffsetHourFormat());
+        case TimezoneSegmentType:
+          segmentType = segment.getSelected() as TimezoneSegmentType;
+          switch (segmentType.getTimezoneType()) {
+            case TimezoneType.Hour:
+              format.push(this.getTimezoneHourFormat());
               break;
-            case TimezoneOffsetType.HourMinute:
-              format.push(this.getTimezoneOffsetHourMinuteFormat());
+            case TimezoneType.HourMinute:
+              format.push(this.getTimezoneHourMinuteFormat());
               break;
-            case TimezoneOffsetType.HourMinuteSecond:
-              format.push(this.getTimezoneOffsetHourMinuteSecondFormat());
+            case TimezoneType.HourMinuteSeparated:
+              format.push(this.getTimezoneHourMinuteSeparatedFormat());
               break;
-            case TimezoneOffsetType.HourMinuteSeparated:
-              format.push(this.getTimezoneOffsetHourMinuteSeparatedFormat());
+            case TimezoneType.Short:
+              format.push(this.getTimezoneHourMinuteSeparatedFormat());
               break;
-            case TimezoneOffsetType.HourMinuteSecondSeparated:
-              format.push(this.getTimezoneOffsetHourMinuteSecondSeparatedFormat());
+            case TimezoneType.HourMinuteSeparated:
+              format.push(this.getTimezoneHourMinuteSeparatedFormat());
               break;
             default:
               throw new UnhandledSegmentTypeError(segmentType);
@@ -145,44 +126,38 @@ export abstract class DateFormat {
   }
 
   public getFormatString(): string {
-    let format = this.getFormat();
+    let segments = this.getSegments();
     let formatString = "";
-    for (let i = 0; i < format.length; i++) {
-      formatString += format[i].getValue();
+    for (let i = 0; i < segments.length; i++) {
+      formatString += segments[i].getValue();
     }
     return formatString;
   }
 
-  public abstract getShortDayFormat(caseStyle: CaseStyle): DateFormatSegment;
-  public abstract getLongDayFormat(caseStyle: CaseStyle): DateFormatSegment;
-  public abstract getShortMonthFormat(caseStyle: CaseStyle): DateFormatSegment;
-  public abstract getLongMonthFormat(caseStyle: CaseStyle): DateFormatSegment;
+  public abstract getDayOfWeekFormat(caseStyle: CaseStyle, abbreviated: boolean): DateFormatSegment;
+  public abstract getTextMonthFormat(caseStyle: CaseStyle, abbreviated: boolean): DateFormatSegment;
   public abstract getDayFormat(caseStyle: CaseStyle, prettyEnding: boolean, zeroPadded: boolean): DateFormatSegment;
   public abstract getMonthFormat(zeroPadded: boolean): DateFormatSegment;
-  public abstract getYearFormat(zeroPadded: boolean): DateFormatSegment;
+  public abstract getYearFormat(zeroPadded: boolean, twoDigit: boolean): DateFormatSegment;
   public abstract getYearMonthDayFormat(): DateFormatSegment;
   public abstract getYearMonthDayHourMinuteFormat(): DateFormatSegment;
   public abstract getYearMonthDayHourMinuteSecondFormat(): DateFormatSegment;
-  public abstract getShortYearFormat(zeroPadded: boolean): DateFormatSegment;
   public abstract getHourMinuteFormat(): DateFormatSegment;
   public abstract getHourMinuteSecondFormat(): DateFormatSegment;
   public abstract getHourFormat(twentyFourHour: boolean, zeroPadded: boolean): DateFormatSegment;
   public abstract getMinuteFormat(zeroPadded: boolean): DateFormatSegment;
   public abstract getSecondFormat(zeroPadded: boolean): DateFormatSegment;
-  public abstract getMillisecondFormat(): DateFormatSegment;
+  public abstract getSecondFractionFormat(secondFractionType: SecondFractionType): DateFormatSegment;
   public abstract getAMPMFormat(caseStyle: CaseStyle): DateFormatSegment;
-  public abstract getShortTimezoneFormat(caseStyle: CaseStyle): DateFormatSegment;
-  public abstract getLongTimezoneFormat(caseStyle: CaseStyle): DateFormatSegment;
-  public abstract getTimezoneOffsetHourFormat(): DateFormatSegment;
-  public abstract getTimezoneOffsetHourMinuteFormat(): DateFormatSegment;
-  public abstract getTimezoneOffsetHourMinuteSecondFormat(): DateFormatSegment;
-  public abstract getTimezoneOffsetHourMinuteSeparatedFormat(): DateFormatSegment;
-  public abstract getTimezoneOffsetHourMinuteSecondSeparatedFormat(): DateFormatSegment;
+  public abstract getTimezoneHourFormat(): DateFormatSegment;
+  public abstract getTimezoneHourMinuteFormat(): DateFormatSegment;
+  public abstract getTimezoneHourMinuteSeparatedFormat(): DateFormatSegment;
+  public abstract getTimezoneShortFormat(): DateFormatSegment;
+  public abstract getTimezoneLongFormat(): DateFormatSegment;
   public abstract getEpochFormat(milliseconds: boolean): DateFormatSegment;
   public abstract getFillFormat(token: string): DateFormatSegment;
 
   public abstract getPrintExample(): string;
   // TODO: what if it doesn't have parsing?? (like bash) Should just return "Cannot parse specific formats?"
   public abstract getParseExample(): string;
-  public abstract getLabel(): string;
 }

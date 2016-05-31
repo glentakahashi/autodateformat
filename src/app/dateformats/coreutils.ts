@@ -1,26 +1,24 @@
 import {DateFormat} from './dateformat';
 import {DateFormatSegment, DateFormatSegmentStatus} from './dateformat-segment';
-import {CaseStyle} from '../segment-type';
+import {CaseStyle, SecondFractionType} from '../segment-type';
 
 export class CoreutilsDateFormat extends DateFormat {
-  public getLabel(): string {
-    return "Coreutils Date";
+  protected static label = "Coreutils Date";
+
+  public getDayOfWeekFormat(caseStyle: CaseStyle, abbreviated: boolean): DateFormatSegment {
+    if (abbreviated) {
+      return this.getCasedSegmentType(caseStyle, "a", "");
+    } else {
+      return this.getCasedSegmentType(caseStyle, "B", "");
+    }
   }
 
-  public getShortDayFormat(caseStyle: CaseStyle): DateFormatSegment {
-    return this.getCasedSegmentType(caseStyle, "a", "");
-  }
-
-  public getLongDayFormat(caseStyle: CaseStyle): DateFormatSegment {
-    return this.getCasedSegmentType(caseStyle, "A", "");
-  }
-
-  public getShortMonthFormat(caseStyle: CaseStyle): DateFormatSegment {
-    return this.getCasedSegmentType(caseStyle, "b", "");
-  }
-
-  public getLongMonthFormat(caseStyle: CaseStyle): DateFormatSegment {
-    return this.getCasedSegmentType(caseStyle, "B", "");
+  public getTextMonthFormat(caseStyle: CaseStyle, abbreviated: boolean): DateFormatSegment {
+    if (abbreviated) {
+      return this.getCasedSegmentType(caseStyle, "b", "");
+    } else {
+      return this.getCasedSegmentType(caseStyle, "B", "");
+    }
   }
 
   public getDayFormat(caseStyle: CaseStyle, prettyEnding: boolean, zeroPadded: boolean): DateFormatSegment {
@@ -45,12 +43,17 @@ export class CoreutilsDateFormat extends DateFormat {
     }
   }
 
-  public getYearFormat(zeroPadded: boolean): DateFormatSegment {
-    if (zeroPadded) {
-      return new DateFormatSegment("%Y", DateFormatSegmentStatus.OKAY, null);
-    } else {
-      return new DateFormatSegment("%-Y", DateFormatSegmentStatus.OKAY, null);
+  public getYearFormat(zeroPadded: boolean, twoDigit: boolean): DateFormatSegment {
+    let format = "%";
+    if (!zeroPadded) {
+      format += "-";
     }
+    if (twoDigit) {
+      format += "y";
+    } else {
+      format += "Y";
+    }
+    return new DateFormatSegment(format, DateFormatSegmentStatus.OKAY, null);
   }
 
   public getYearMonthDayFormat(): DateFormatSegment {
@@ -63,14 +66,6 @@ export class CoreutilsDateFormat extends DateFormat {
 
   public getYearMonthDayHourMinuteSecondFormat(): DateFormatSegment {
     return new DateFormatSegment("%Y%m%d%H%M%S", DateFormatSegmentStatus.OKAY, null);
-  }
-
-  public getShortYearFormat(zeroPadded: boolean): DateFormatSegment {
-    if (zeroPadded) {
-      return new DateFormatSegment("%y", DateFormatSegmentStatus.OKAY, null);
-    } else {
-      return new DateFormatSegment("%-y", DateFormatSegmentStatus.OKAY, null);
-    }
   }
 
   public getHourMinuteFormat(): DateFormatSegment {
@@ -113,8 +108,14 @@ export class CoreutilsDateFormat extends DateFormat {
     }
   }
 
-  public getMillisecondFormat(): DateFormatSegment {
-    return new DateFormatSegment("%N", DateFormatSegmentStatus.OKAY, null);
+  public getSecondFractionFormat(secondFractionType: SecondFractionType): DateFormatSegment {
+    switch (secondFractionType) {
+      case SecondFractionType.Milliseconds:
+      case SecondFractionType.Microseconds:
+        return new DateFormatSegment("%N", DateFormatSegmentStatus.WARN, CoreutilsDateFormat.label + " can only display nanoseconds.");
+      case SecondFractionType.Nanoseconds:
+        return new DateFormatSegment("%N", DateFormatSegmentStatus.OKAY, null);
+    }
   }
 
   public getAMPMFormat(caseStyle: CaseStyle): DateFormatSegment {
@@ -128,32 +129,32 @@ export class CoreutilsDateFormat extends DateFormat {
     }
   }
 
-  public getShortTimezoneFormat(caseStyle: CaseStyle): DateFormatSegment {
-    return new DateFormatSegment("%Z", DateFormatSegmentStatus.OKAY, null);
-  }
-
-  public getLongTimezoneFormat(caseStyle: CaseStyle): DateFormatSegment {
-    return new DateFormatSegment("Error", DateFormatSegmentStatus.ERROR, "Coreutils Date does not support Long Timezones");
-  }
-
-  public getTimezoneOffsetHourFormat(): DateFormatSegment {
+  public getTimezoneHourFormat(): DateFormatSegment {
     return new DateFormatSegment("%:::z", DateFormatSegmentStatus.WARN, "This mode specifies to necessary precision. Coreutils Date does not have a way of forcing only hour.");
   }
 
-  public getTimezoneOffsetHourMinuteFormat(): DateFormatSegment {
+  public getTimezoneHourMinuteFormat(): DateFormatSegment {
     return new DateFormatSegment("%z", DateFormatSegmentStatus.OKAY, null);
   }
 
-  public getTimezoneOffsetHourMinuteSecondFormat(): DateFormatSegment {
+  public getTimezoneHourMinuteSecondFormat(): DateFormatSegment {
     return new DateFormatSegment("%::z", DateFormatSegmentStatus.ERROR, "There is no way to specify hour-minute-second without separators in bash");
   }
 
-  public getTimezoneOffsetHourMinuteSeparatedFormat(): DateFormatSegment {
+  public getTimezoneHourMinuteSeparatedFormat(): DateFormatSegment {
     return new DateFormatSegment("%:z", DateFormatSegmentStatus.OKAY, null);
   }
 
-  public getTimezoneOffsetHourMinuteSecondSeparatedFormat(): DateFormatSegment {
+  public getTimezoneHourMinuteSecondSeparatedFormat(): DateFormatSegment {
     return new DateFormatSegment("%::z", DateFormatSegmentStatus.OKAY, null);
+  }
+
+  public getTimezoneShortFormat(): DateFormatSegment {
+    return new DateFormatSegment("%Z", DateFormatSegmentStatus.OKAY, null);
+  }
+
+  public getTimezoneLongFormat(): DateFormatSegment {
+    return new DateFormatSegment("Error", DateFormatSegmentStatus.ERROR, "Coreutils Date does not support Long Timezones");
   }
 
   public getEpochFormat(milliseconds: boolean): DateFormatSegment {

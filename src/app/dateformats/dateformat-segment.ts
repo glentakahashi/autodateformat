@@ -13,6 +13,11 @@ export class DateFormatSegment {
     return this.value;
   }
 
+  /*
+   * ERROR = No mapping at all
+   * WARN = Approximate mapping
+   * OKAY = Exact mapping
+   */
   public getStatusClass(): string {
     switch (this.stat) {
       case DateFormatSegmentStatus.ERROR:

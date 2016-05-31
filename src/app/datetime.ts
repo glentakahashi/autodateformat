@@ -1,13 +1,10 @@
 /* tslint:disable:max-line-length */
 import {Segment} from './segment';
 import {
-  SegmentType, ShortDaySegmentType, LongDaySegmentType,
-  ShortMonthSegmentType, LongMonthSegmentType, DaySegmentType,
-  MonthSegmentType, YearSegmentType, ShortYearSegmentType,
-  HourMinuteSegmentType, HourMinuteSecondSegmentType, HourSegmentType,
-  MinuteSegmentType, SecondSegmentType, MillisecondSegmentType,
-  AMPMSegmentType, ShortTimezoneSegmentType, LongTimezoneSegmentType,
-  TimezoneOffsetSegmentType, EpochSegmentType, FillSegmentType,
+  SegmentType, TextMonthSegmentType, DaySegmentType, MonthSegmentType,
+  YearSegmentType, HourMinuteSegmentType, HourMinuteSecondSegmentType,
+  HourSegmentType, MinuteSegmentType, SecondSegmentType,
+  AMPMSegmentType, EpochSegmentType, FillSegmentType, SecondFractionSegmentType,
   SEGMENT_TYPES,
 } from './segment-type';
 
@@ -232,10 +229,9 @@ export class DateTime {
       if ((segment.has(MonthSegmentType) || segment.has(DaySegmentType)) && i + 2 < segments.length && DateTime.DATE_SEPARATORS.indexOf(segments[i + 1].getToken()) !== -1
           && (segments[i + 2].has(DaySegmentType) || segments[i + 2].has(MonthSegmentType))) {
         let j = i;
-        if (i + 4 < segments.length  && DateTime.DATE_SEPARATORS.indexOf(segments[i + 3].getToken()) !== -1 && (segments[i + 4].has(YearSegmentType) || segments[i + 4].has(ShortYearSegmentType))) {
+        if (i + 4 < segments.length  && DateTime.DATE_SEPARATORS.indexOf(segments[i + 3].getToken()) !== -1 && segments[i + 4].has(YearSegmentType)) {
           this.disableAllOfSegmentType(segments, YearSegmentType);
-          this.disableAllOfSegmentType(segments, ShortYearSegmentType);
-          segments[i + 4].setTypes([YearSegmentType, ShortYearSegmentType]);
+          segments[i + 4].setTypes([YearSegmentType]);
           j += 2;
         }
         this.disableAllOfSegmentType(segments, MonthSegmentType);
@@ -289,18 +285,18 @@ export class DateTime {
       }
 
       // Second.milliseconds
-      if (segment.has(SecondSegmentType) && i + 2 < segments.length && segments[i + 1].getToken() === "." && segments[i + 2].has(MillisecondSegmentType)) {
+      if (segment.has(SecondSegmentType) && i + 2 < segments.length && segments[i + 1].getToken() === "." && segments[i + 2].has(SecondFractionSegmentType)) {
         this.disableAllOfSegmentType(segments, SecondSegmentType);
-        this.disableAllOfSegmentType(segments, MillisecondSegmentType);
+        this.disableAllOfSegmentType(segments, SecondFractionSegmentType);
         segment.setType(SecondSegmentType);
-        segments[i + 2].setType(MillisecondSegmentType);
+        segments[i + 2].setType(SecondFractionSegmentType);
         i += 2;
         continue;
       }
 
       // Because the previous section should skip over milliseconds if it finds them, ignore milliseconds here as they are probably erroneous
-      if (segment.has(MillisecondSegmentType)) {
-        segment.disableType(MillisecondSegmentType);
+      if (segment.has(SecondFractionSegmentType)) {
+        segment.disableType(SecondFractionSegmentType);
       }
     }
 
@@ -323,13 +319,10 @@ export class DateTime {
     // if we find any one of the following alone, remove all equivalent types (including itself) from other segments if it won"t leave them empty
     // repeat until no more changes
     let segmentTypeEquivalences: (typeof SegmentType)[][] = [
-      [YearSegmentType, ShortYearSegmentType],
-      [LongMonthSegmentType, ShortMonthSegmentType, MonthSegmentType],
-      [LongDaySegmentType, ShortDaySegmentType],
+      [TextMonthSegmentType, MonthSegmentType],
       [HourSegmentType, HourMinuteSegmentType, HourMinuteSecondSegmentType],
       [MinuteSegmentType, HourMinuteSegmentType, HourMinuteSecondSegmentType],
       [SecondSegmentType, HourMinuteSecondSegmentType],
-      [LongTimezoneSegmentType, ShortTimezoneSegmentType, TimezoneOffsetSegmentType],
     ];
 
     // add singleton equivalence classes everywhere

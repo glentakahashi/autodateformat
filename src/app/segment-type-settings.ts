@@ -18,7 +18,7 @@ export class SegmentTypeSettings {
     return name in this.settings;
   }
 
-  public set(name: string, value: any) {
+  public setValue(name: string, value: any) {
     if (!this.has(name)) {
       throw new RangeError("Setting with name " + name + " not found");
     }

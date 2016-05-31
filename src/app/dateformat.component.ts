@@ -1,9 +1,10 @@
 import {Component} from 'angular2/core';
 import {DateTime} from './datetime';
 import {Segment} from './segment';
-import {DaySegmentType, MonthSegmentType, LongMonthSegmentType, ShortMonthSegmentType, FillSegmentType, SegmentType} from './segment-type';
+import {DaySegmentType, MonthSegmentType, TextMonthSegmentType, FillSegmentType, SegmentType} from './segment-type';
 import {DateFormat} from './dateformats/dateformat';
 import {CoreutilsDateFormat} from './dateformats/coreutils';
+import {JavaSDFDateFormat} from './dateformats/javasdf';
 
 @Component({
     inputs: ['datetime'],
@@ -13,21 +14,29 @@ import {CoreutilsDateFormat} from './dateformats/coreutils';
         <div *ngFor="#warning of getWarnings(datetime)">
           {{warning}}
         </div>
-        <div *ngFor="#dateFormat of getDateFormats(datetime)">
+        <select class="" [(ngModel)]="selectedDateFormatIndex">
+          <label>Date Format: </label>
+          <option *ngFor="#dateFormat of DATE_FORMATS; #i = index" [value]="i">
+            {{dateFormat.label}}
+          </option>
+        </select>
+        <div *ngIf="selectedDateFormatIndex !== undefined">
           <div>
-            {{dateFormat.getLabel()}}:
-            <span *ngFor="#dateFormatSegment of dateFormat.getFormat()" [class]="dateFormatSegment.getStatusClass()" title="{{dateFormatSegment.tooltip}}">{{dateFormatSegment.value}}</span>
+            {{DATE_FORMATS[selectedDateFormatIndex].label}}:
+            <span *ngFor="#dateFormatSegment of getDateFormat(datetime).getSegments()" [class]="dateFormatSegment.getStatusClass()" title="{{dateFormatSegment.tooltip}}">{{dateFormatSegment.value}}</span>
           </div>
-          <div>Print Example: {{dateFormat.getPrintExample()}}</div>
-          <div>Parse Example: {{dateFormat.getParseExample()}}</div>
+          <div>Parse Example: {{getDateFormat(datetime).getParseExample()}}</div>
+          <div>Print Example: {{getDateFormat(datetime).getPrintExample()}}</div>
         </div>
       </template>
     `,
 })
 export class DateFormatComponent {
   private DATE_FORMATS: typeof DateFormat[] = [
-     CoreutilsDateFormat,
+     JavaSDFDateFormat, CoreutilsDateFormat
   ];
+
+  private selectedDateFormatIndex = 0;
 
   public getWarnings(datetime: DateTime): string[] {
     let warnings: string[] = [];
@@ -49,21 +58,17 @@ export class DateFormatComponent {
       }
     }
     // If you have month but no day, or vice versa
-    if ((foundTypes.indexOf(MonthSegmentType) > -1 || foundTypes.indexOf(LongMonthSegmentType) > -1 || foundTypes.indexOf(ShortMonthSegmentType) > -1) && foundTypes.indexOf(DaySegmentType) === -1) {
+    if ((foundTypes.indexOf(MonthSegmentType) > -1 || foundTypes.indexOf(TextMonthSegmentType) > -1) && foundTypes.indexOf(DaySegmentType) === -1) {
       warnings.push("A month segment was found but no day segment was found");
-    } else if (foundTypes.indexOf(DaySegmentType) > -1 && (foundTypes.indexOf(MonthSegmentType) === -1 && foundTypes.indexOf(LongMonthSegmentType) === -1 && foundTypes.indexOf(ShortMonthSegmentType) === -1)) {
+    } else if (foundTypes.indexOf(DaySegmentType) > -1 && (foundTypes.indexOf(MonthSegmentType) === -1 && foundTypes.indexOf(TextMonthSegmentType) === -1)) {
       warnings.push("A day segment was found but no month segment was found");
     }
     return warnings;
   }
 
-  public getDateFormats(datetime: DateTime): DateFormat[] {
-    let dateFormats: DateFormat[] = [];
-    for (let i in this.DATE_FORMATS) {
-      let o = Object.create(this.DATE_FORMATS[i].prototype);
-      o.constructor.apply(o, new Array(datetime));
-      dateFormats.push(o);
-    }
-    return dateFormats;
+  public getDateFormat(datetime: DateTime): DateFormat {
+    let o = Object.create(this.DATE_FORMATS[this.selectedDateFormatIndex].prototype);
+    o.constructor.apply(o, new Array(datetime));
+    return o;
   }
 }
