@@ -1,5 +1,7 @@
 {
   "server": {
     "baseDir": ["dev", "."]
-  }
+  },
+  "files": ["dev"],
+  "injectChanges": true
 }

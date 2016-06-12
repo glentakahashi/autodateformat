@@ -40,6 +40,15 @@ export class Segment {
     return types;
   }
 
+  public getTypesSorted(): SegmentType[] {
+    return this.getTypes().sort((a: SegmentType, b: SegmentType): number => {
+      let valA = (a.getID() === this.getSelectedType().id) ? 3 : (a.isEnabled() ? 2 : (a.isValid() ? 1 : 0));
+      let valB = (b.getID() === this.getSelectedType().id) ? 3 : (b.isEnabled() ? 2 : (b.isValid() ? 1 : 0));
+      // We want highest values first
+      return valB - valA;
+    });
+  }
+
   public getEnabledTypes(): SegmentType[] {
     let types: SegmentType[] = [];
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
@@ -119,7 +128,7 @@ export class Segment {
 
   public setSelected(segmentType: typeof SegmentType) {
     if (this.has(segmentType)) {
-      this.enableType(segmentType);
+      //this.enableType(segmentType);
       this.selected = segmentType;
     }
   }

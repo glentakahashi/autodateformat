@@ -10,25 +10,36 @@ import {JavaSDFDateFormat} from './dateformats/javasdf';
     inputs: ['datetime'],
     selector: 'dateformat',
     template: `
+    <div class="dateformat">
       <template [ngIf]="datetime">
-        <div *ngFor="#warning of getWarnings(datetime)">
+        <div class="format-selector">
+          <label for="date-format-selector">Date Format: </label>
+          <select id="date-format-selector" [(ngModel)]="selectedDateFormatIndex">
+            <option *ngFor="#dateFormat of DATE_FORMATS; #i = index" [value]="i">
+              {{dateFormat.label}}
+            </option>
+          </select>
+        </div>
+        <div class="date-format-warnings-title" *ngIf="getWarnings(datetime).length > 0">
+          Warnings:
+        </div>
+        <div class="date-format-warnings" *ngFor="#warning of getWarnings(datetime)">
           {{warning}}
         </div>
-        <select class="" [(ngModel)]="selectedDateFormatIndex">
-          <label>Date Format: </label>
-          <option *ngFor="#dateFormat of DATE_FORMATS; #i = index" [value]="i">
-            {{dateFormat.label}}
-          </option>
-        </select>
-        <div *ngIf="selectedDateFormatIndex !== undefined">
-          <div>
+        <div class="dateformat-examples" *ngIf="selectedDateFormatIndex !== undefined">
+          <div class="dateformat-name">
             {{DATE_FORMATS[selectedDateFormatIndex].label}}:
             <span *ngFor="#dateFormatSegment of getDateFormat(datetime).getSegments()" [class]="dateFormatSegment.getStatusClass()" title="{{dateFormatSegment.tooltip}}">{{dateFormatSegment.value}}</span>
           </div>
-          <div>Parse Example: {{getDateFormat(datetime).getParseExample()}}</div>
-          <div>Print Example: {{getDateFormat(datetime).getPrintExample()}}</div>
+          <div class="dateformat-parse-example">Parse Example:
+            <pre>{{getDateFormat(datetime).getParseExample()}}</pre>
+          </div>
+          <div class="dateformat-print-example">Print Example:
+            <pre>{{getDateFormat(datetime).getPrintExample()}}</pre>
+          </div>
         </div>
       </template>
+    </div>
     `,
 })
 export class DateFormatComponent {

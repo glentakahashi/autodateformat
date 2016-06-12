@@ -11,6 +11,9 @@ do it in a linkedlist format?
 
 make a releasing script for easy zip bundling for github
 
+
+add a 'FORK ME ON GITHUB/ report an issue in the top right/left'
+
 #Requirements
 ruby gems
 npm

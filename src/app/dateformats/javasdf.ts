@@ -43,15 +43,23 @@ export class JavaSDFDateFormat extends DateFormat {
     }
   }
 
+  // WARNING: "y" returns 4 digit year :(((
+  // does it ever make sense to have a non-zero-padded 2-digit year?
   public getYearFormat(zeroPadded: boolean, twoDigit: boolean): DateFormatSegment {
     let format = "";
+    let stat = DateFormatSegmentStatus.OKAY;
+    let tooltip = null;
     if (zeroPadded) {
       format += "y";
     }
-    if (!twoDigit) {
-      format += "yy";
+    if (twoDigit) {
+      stat = DateFormatSegmentStatus.ERROR;
+      tooltip = JavaSDFDateFormat.label + " does not support 2-digit non-zero-padded years.";
+      format = "yy";
+    } else {
+      format += "yyy";
     }
-    return new DateFormatSegment(format, DateFormatSegmentStatus.OKAY, null);
+    return new DateFormatSegment(format, stat, tooltip);
   }
 
   public getYearMonthDayFormat(): DateFormatSegment {
@@ -160,11 +168,18 @@ export class JavaSDFDateFormat extends DateFormat {
 
   // TODO: what if it doesn't have parsing?? (like this one) Probably, just return null and show an info
   public getParseExample(): string {
-    return "Date myParsedDate = new SimpleDateFormat(\"" + this.getFormatString() + "\").parse(\"" + this.datetime.toString() + "\");";
+    return "import java.text.SimpleDateFormat;\n" +
+           "import java.util.Date;\n\n" +
+           "SimpleDateFormat myDateFormat = new SimpleDateFormat(\"" + this.getFormatString() + "\");\n" +
+           "Date myParsedDate = myDateFormat.parse(\"" + this.datetime.toString() + "\");";
   }
 
   public getPrintExample(): string {
-    return "System.out.println(new SimpleDateFormat(\"" + this.getFormatString() + "\").format(myParsedDate));";
+    return "import java.text.SimpleDateFormat;\n" +
+           "import java.util.Date;\n\n" +
+           "SimpleDateFormat myDateFormat = new SimpleDateFormat(\"" + this.getFormatString() + "\");\n" +
+           "Date myParsedDate = new Date();\n" +
+           "System.out.println(myDateFormat.format(myParsedDate));";
   }
 
   private getCasedSegmentType(caseStyle: CaseStyle, formatString: string): DateFormatSegment {

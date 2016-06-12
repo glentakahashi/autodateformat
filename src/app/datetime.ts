@@ -66,7 +66,7 @@ export class DateTime {
 
   public newSegment(segment: Segment) {
     let segmentId = this.segments.indexOf(segment);
-    $('#new-segment-modal input').val(segment.getToken());
+    $('#new-segment-modal input').val();
     $('#new-segment-modal .btn-primary').off('click');
     $('#new-segment-modal .btn-primary').click(() => {
       let val = $('#new-segment-modal input').val();
@@ -99,12 +99,13 @@ export class DateTime {
     let token: string = this.segments[segmentId].getToken();
     let newSegment: Segment;
     let newSegments: Segment[] = [];
-    let ul = $('#split-segment-modal .characters');
+    let ul = $('#split-segment-modal .split-characters');
     ul.html('');
     for (let i = 0; i < token.length; i++) {
       ul.append('<li>' + token[i] + '</li>');
       if (i !== token.length - 1) {
-        ul.append('<input type="checkbox">');
+        let id = "split-segment-checkbox_" + i;
+        ul.append('<input type="checkbox" id="' + id + '"><label for="' + id + '"><span class="glyphicon glyphicon-scissors"></label>');
       }
     }
     $('#split-segment-modal .btn-primary').off('click');
@@ -112,7 +113,7 @@ export class DateTime {
       let start = 0;
       let end = 0;
       let substringIndices: number[] = [];
-      let checkboxes = $('#split-segment-modal .characters input');
+      let checkboxes = $('#split-segment-modal .split-characters input');
       for (let i = 0; i < checkboxes.length; i++) {
         if ((<HTMLInputElement> checkboxes[i]).checked) {
           substringIndices.push(i + 1);

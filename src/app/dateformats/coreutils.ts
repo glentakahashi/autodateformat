@@ -9,7 +9,7 @@ export class CoreutilsDateFormat extends DateFormat {
     if (abbreviated) {
       return this.getCasedSegmentType(caseStyle, "a", "");
     } else {
-      return this.getCasedSegmentType(caseStyle, "B", "");
+      return this.getCasedSegmentType(caseStyle, "A", "");
     }
   }
 
@@ -25,8 +25,8 @@ export class CoreutilsDateFormat extends DateFormat {
     let tooltip = null;
     let stat = DateFormatSegmentStatus.OKAY;
     if (prettyEnding) {
-      tooltip = "Coreutils Bash does not support st, nd, rd, th.";
-      stat = DateFormatSegmentStatus.ERROR;
+      tooltip = CoreutilsDateFormat.label + " does not support st, nd, rd, th.";
+      stat = DateFormatSegmentStatus.WARN;
     }
     if (zeroPadded) {
       return new DateFormatSegment("%d", stat, tooltip);
@@ -137,16 +137,8 @@ export class CoreutilsDateFormat extends DateFormat {
     return new DateFormatSegment("%z", DateFormatSegmentStatus.OKAY, null);
   }
 
-  public getTimezoneHourMinuteSecondFormat(): DateFormatSegment {
-    return new DateFormatSegment("%::z", DateFormatSegmentStatus.ERROR, "There is no way to specify hour-minute-second without separators in bash");
-  }
-
   public getTimezoneHourMinuteSeparatedFormat(): DateFormatSegment {
     return new DateFormatSegment("%:z", DateFormatSegmentStatus.OKAY, null);
-  }
-
-  public getTimezoneHourMinuteSecondSeparatedFormat(): DateFormatSegment {
-    return new DateFormatSegment("%::z", DateFormatSegmentStatus.OKAY, null);
   }
 
   public getTimezoneShortFormat(): DateFormatSegment {
@@ -183,7 +175,7 @@ export class CoreutilsDateFormat extends DateFormat {
         format += "^";
         break;
       case CaseStyle.Lower:
-        stat = DateFormatSegmentStatus.ERROR;
+        stat = DateFormatSegmentStatus.WARN;
         tooltip = "Coreutils Date does not have an option for lowercase.";
         break;
       case CaseStyle.Title:

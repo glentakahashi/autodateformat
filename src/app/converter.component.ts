@@ -7,11 +7,11 @@ import {DateFormatComponent} from './dateformat.component';
   directives: [DateTimeComponent, DateFormatComponent],
   selector: 'converter',
   template: `
-    <div>
-      <div>
-        <input [(ngModel)]="date" className="date" type="text"/>
-        <button className="btn" (click)="convert()">Convert</button>
-        <button className="btn" (click)="setRandom()">Random</button>
+    <div class="converter">
+      <div class="date-input">
+        <input [(ngModel)]="date" class="date" type="text"/>
+        <button class="btn" (click)="convert()">Convert</button>
+        <button class="btn" (click)="setRandom()">Random</button>
       </div>
       <dateformat [datetime]="datetime"></dateformat>
       <datetime [datetime]="datetime"></datetime>

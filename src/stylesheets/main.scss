@@ -1,11 +1,87 @@
-.segment, .segmentType, .segmentTypeSetting {
-  display: inline-block;
+//testing
+//testing
+//testing
+//testing
+div, span {
   border: 1px solid black;
-  padding: 5px;
+}
+//testing
+//testing
+//testing
+//testing
+
+header h1.title {
+  text-align: center;
 }
 
-.segment {
-  display: block;
+footer {
+  text-align: center;
+}
+
+#split-segment-modal .split-characters {
+  padding: 0px;
+  li {
+    display: inline;
+    padding: 5px;
+  }
+  input[type="checkbox"] {
+    display: none;
+    & + label {
+    cursor: pointer;
+    }
+    &:not(:checked) + label span {
+      opacity: .5;
+    }
+  }
+}
+
+.date-input {
+  text-align: center;
+}
+
+
+.dateformat {
+  .format-selector, .dateformat-name {
+    text-align: center;
+  }
+  .parse-example pre {
+    width: auto;
+  }
+  .print-example pre {
+    width: auto;
+  }
+}
+
+.datetime {
+  display: inline-flex;
+}
+
+.segment-container {
+  vertical-align: top;
+  display: inline-block;
+  width: 147px;
+
+  .segment-buttons {
+    display: inline-block;
+    width: 17px;
+    height: 24px;
+
+    .merge-segment, .insert-segment {
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+    }
+  }
+
+  .segment-container-body {
+    .token {
+      text-align: center;
+    }
+
+    vertical-align: top;
+    display: inline-block;
+    width: 120px;
+  }
 }
 
 .disabled {
@@ -20,9 +96,6 @@
   color: red;
 }
 
-.segments {
-}
-
 .statusclass-okay {
   color: green;
 }
@@ -33,8 +106,4 @@
 
 .statusclass-error {
   color: red;
-}
-
-.joining {
-  background-color: green;
 }
