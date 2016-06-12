@@ -5,6 +5,7 @@ import {DaySegmentType, MonthSegmentType, TextMonthSegmentType, FillSegmentType,
 import {DateFormat} from './dateformats/dateformat';
 import {CoreutilsDateFormat} from './dateformats/coreutils';
 import {JavaSDFDateFormat} from './dateformats/javasdf';
+import {PostgresDateformat} from './dateformats/postgres';
 
 @Component({
     inputs: ['datetime'],
@@ -44,7 +45,7 @@ import {JavaSDFDateFormat} from './dateformats/javasdf';
 })
 export class DateFormatComponent {
   private DATE_FORMATS: typeof DateFormat[] = [
-     JavaSDFDateFormat, CoreutilsDateFormat
+     JavaSDFDateFormat, CoreutilsDateFormat, PostgresDateformat
   ];
 
   private selectedDateFormatIndex = 0;

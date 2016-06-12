@@ -118,7 +118,13 @@ export class CoreutilsDateFormat extends DateFormat {
     }
   }
 
-  public getAMPMFormat(caseStyle: CaseStyle): DateFormatSegment {
+  public getAMPMFormat(caseStyle: CaseStyle, abbreviated: boolean, periods: boolean): DateFormatSegment {
+    if (abbreviated) {
+      return new DateFormatSegment("%p", DateFormatSegmentStatus.WARN, "Bash cannot output abbreviated ampm");
+    }
+    if (periods) {
+      return new DateFormatSegment("%p", DateFormatSegmentStatus.WARN, "Bash cannot output am/pm with periods.");
+    }
     switch (caseStyle) {
       case CaseStyle.Upper:
         return new DateFormatSegment("%p", DateFormatSegmentStatus.OKAY, null);
@@ -130,7 +136,8 @@ export class CoreutilsDateFormat extends DateFormat {
   }
 
   public getTimezoneHourFormat(): DateFormatSegment {
-    return new DateFormatSegment("%:::z", DateFormatSegmentStatus.WARN, "This mode specifies to necessary precision. Coreutils Date does not have a way of forcing only hour.");
+    return new DateFormatSegment("%:::z", DateFormatSegmentStatus.WARN,
+                                 "This mode specifies to necessary precision. Coreutils Date does not have a way of forcing only hour.");
   }
 
   public getTimezoneHourMinuteFormat(): DateFormatSegment {
@@ -159,7 +166,8 @@ export class CoreutilsDateFormat extends DateFormat {
 
   // TODO: what if it doesn't have parsing?? (like this one) Probably, just return null and show an info
   public getParseExample(): string {
-    return "date '+" + this.getFormatString() + "' --date='" + this.datetime.toString() + "'";
+    return CoreutilsDateFormat.label + " does not have formatted date parsing. This may still work however:\n"
+           + "date '+" + this.getFormatString() + "' --date='" + this.datetime.toString() + "'";
   }
 
   public getPrintExample(): string {

@@ -53,7 +53,7 @@ export class JavaSDFDateFormat extends DateFormat {
       format += "y";
     }
     if (twoDigit) {
-      stat = DateFormatSegmentStatus.ERROR;
+      stat = DateFormatSegmentStatus.WARN;
       tooltip = JavaSDFDateFormat.label + " does not support 2-digit non-zero-padded years.";
       format = "yy";
     } else {
@@ -118,10 +118,19 @@ export class JavaSDFDateFormat extends DateFormat {
     if (secondFractionType !== SecondFractionType.Milliseconds) {
       return new DateFormatSegment("Error", DateFormatSegmentStatus.ERROR, JavaSDFDateFormat.label + " can only parse milliseconds.");
     }
-    return new DateFormatSegment("SSS", DateFormatSegmentStatus.WARN, "Milliseconds must always be 3 digits, otherwise it will not parse correctly. To parse 1 or two digits, use that many S's");
+    return new DateFormatSegment(
+      "SSS", DateFormatSegmentStatus.WARN,
+      "Milliseconds must always be 3 digits, otherwise it will not parse correctly. To parse 1 or two digits, use that many S's"
+    );
   }
 
-  public getAMPMFormat(caseStyle: CaseStyle): DateFormatSegment {
+  public getAMPMFormat(caseStyle: CaseStyle, abbreviated: boolean, periods: boolean): DateFormatSegment {
+    if (abbreviated) {
+      return new DateFormatSegment("a", DateFormatSegmentStatus.WARN, "Java cannot output abbreviated ampm");
+    }
+    if (periods) {
+      return new DateFormatSegment("a", DateFormatSegmentStatus.WARN, "Java cannot output am/pm with periods.");
+    }
     switch (caseStyle) {
       case CaseStyle.Upper:
         return new DateFormatSegment("a", DateFormatSegmentStatus.OKAY, null);

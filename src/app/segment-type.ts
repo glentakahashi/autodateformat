@@ -7,9 +7,11 @@ import {BooleanSegmentTypeSetting, StringSegmentTypeSetting, DropdownSegmentType
 
 // TODO: define a "split" verb and a "join" verb to combine two segments? It must do it automatically?
 // i.e. -102034 = Timezone by default, be able to split into -, 102034.
-// 102034 = hourminutesecond/epoch by default, etc. able to split at any spot you want - make the user do the functionality?? Maybe keep the combined words for ease of use, but allow to split
+// 102034 = hourminutesecond/epoch by default, etc. able to split at any spot you want -
+// make the user do the functionality?? Maybe keep the combined words for ease of use, but allow to split
 // Initial parsing only defines initial segments
-// Put on the Segment class (make a single UI for splitting/joining the string, strings will be short so maybe just make an easy "drag a line bar" thing)
+// Put on the Segment class (make a single UI for splitting/joining the string, strings will be short so maybe just
+// make an easy "drag a line bar" thing)
 
 interface ZeroPaddedSegmentType {
   isZeroPadded(): boolean;
@@ -438,10 +440,24 @@ export class AMPMSegmentType extends StringSegmentType {
 
   constructor(token: string) {
     super(token);
+    this.settings.add(new BooleanSegmentTypeSetting(
+      "periods", "Periods", "Whether or not to put periods between ampm.", token.indexOf('.') !== -1
+    ));
+    this.settings.add(new BooleanSegmentTypeSetting(
+      "abbreviated", "Abbreviated", "Use a/p instead of am/pm", token.length === 1
+    ));
     if (AMPMSegmentType.AMPM.indexOf(token.toLowerCase()) !== -1) {
       this.setCaseStyle(token);
       this.valid = true;
     }
+  }
+
+  public isPeriods(): boolean {
+    return this.settings.get("periods").getValue();
+  }
+
+  public isAbbreviated(): boolean {
+    return this.settings.get("abbreviated").getValue();
   }
 }
 

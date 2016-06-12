@@ -86,7 +86,7 @@ export abstract class DateFormat {
           break;
         case AMPMSegmentType:
           segmentType = segment.getSelected() as AMPMSegmentType;
-          format.push(this.getAMPMFormat(segmentType.getCaseStyle()));
+          format.push(this.getAMPMFormat(segmentType.getCaseStyle(), segmentType.isAbbreviated(), segmentType.isPeriods()));
           break;
         case TimezoneSegmentType:
           segmentType = segment.getSelected() as TimezoneSegmentType;
@@ -148,7 +148,7 @@ export abstract class DateFormat {
   public abstract getMinuteFormat(zeroPadded: boolean): DateFormatSegment;
   public abstract getSecondFormat(zeroPadded: boolean): DateFormatSegment;
   public abstract getSecondFractionFormat(secondFractionType: SecondFractionType): DateFormatSegment;
-  public abstract getAMPMFormat(caseStyle: CaseStyle): DateFormatSegment;
+  public abstract getAMPMFormat(caseStyle: CaseStyle, abbreviated: boolean, periods: boolean): DateFormatSegment;
   public abstract getTimezoneHourFormat(): DateFormatSegment;
   public abstract getTimezoneHourMinuteFormat(): DateFormatSegment;
   public abstract getTimezoneHourMinuteSeparatedFormat(): DateFormatSegment;
