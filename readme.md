@@ -15,6 +15,11 @@ make a releasing script for easy zip bundling for github
 add a 'FORK ME ON GITHUB/ report an issue in the top right/left'
 
 #Requirements
-ruby gems
+ruby gems, bundler
 npm
 grunt
+
+#instructions
+`npm install`
+`bundle install`
+npm start for dev mode
