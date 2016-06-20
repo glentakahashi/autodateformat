@@ -53,8 +53,10 @@ export class JavaSDFDateFormat extends DateFormat {
       format += "y";
     }
     if (twoDigit) {
-      stat = DateFormatSegmentStatus.WARN;
-      tooltip = JavaSDFDateFormat.label + " does not support 2-digit non-zero-padded years.";
+      if (!zeroPadded) {
+        stat = DateFormatSegmentStatus.WARN;
+        tooltip = JavaSDFDateFormat.label + " does not support 2-digit non-zero-padded years.";
+      }
       format = "yy";
     } else {
       format += "yyy";

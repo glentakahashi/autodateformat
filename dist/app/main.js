@@ -594,7 +594,7 @@ System.register("app/timezones", [], function(exports_2, context_2) {
                     "omst", "orat", "pdt", "pet", "pett", "pgt", "phot", "pkt", "pmdt", "pmst", "pont", "pst", "pst", "pyst", "pyt", "ret", "rott", "sakt",
                     "samt", "sast", "sbt", "sct", "sgt", "slst", "sret", "srt", "sst", "sst", "syot", "taht", "tha", "tft", "tjt", "tkt", "tlt", "tmt",
                     "tot", "tvt", "uct", "ulat", "usz1", "utc", "uyst", "uyt", "uzt", "vet", "vlat", "volt", "vost", "vut", "wakt", "wast", "wat", "wedt",
-                    "west", "wet", "wit", "wst", "yakt", "yekt", "z",
+                    "west", "wet", "wit", "wst", "yakt", "yekt",
                 ];
                 return Timezones;
             }());
@@ -624,6 +624,9 @@ System.register("app/segment-type-setting", [], function(exports_3, context_3) {
                 };
                 SegmentTypeSetting.prototype.setValue = function (value) {
                     this.value = value;
+                };
+                SegmentTypeSetting.prototype.getHelpText = function () {
+                    return this.helptext;
                 };
                 return SegmentTypeSetting;
             }());
@@ -679,7 +682,7 @@ System.register("app/segment-type-settings", [], function(exports_4, context_4) 
                 SegmentTypeSettings.prototype.has = function (name) {
                     return name in this.settings;
                 };
-                SegmentTypeSettings.prototype.set = function (name, value) {
+                SegmentTypeSettings.prototype.setValue = function (name, value) {
                     if (!this.has(name)) {
                         throw new RangeError("Setting with name " + name + " not found");
                     }
@@ -705,7 +708,7 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
     "use strict";
     var __moduleName = context_5 && context_5.id;
     var utils_1, timezones_1, segment_type_settings_1, segment_type_setting_1;
-    var SegmentType, CaseStyle, StringSegmentType, ShortDaySegmentType, LongDaySegmentType, ShortMonthSegmentType, LongMonthSegmentType, DaySegmentType, MonthSegmentType, YearSegmentType, ShortYearSegmentType, HourMinuteSegmentType, HourMinuteSecondSegmentType, YearMonthDaySegmentType, YearMonthDayHourMinuteSegmentType, YearMonthDayHourMinuteSecondSegmentType, MultiSegment, HourSegmentType, MinuteSegmentType, SecondSegmentType, MillisecondSegmentType, AMPMSegmentType, ShortTimezoneSegmentType, LongTimezoneSegmentType, TimezoneOffsetType, TimezoneOffsetSegmentType, EpochSegmentType, FillSegmentType, SEGMENT_TYPES;
+    var SegmentType, CaseStyle, StringSegmentType, DayOfWeekSegmentType, TextMonthSegmentType, DaySegmentType, MonthSegmentType, YearSegmentType, HourMinuteSegmentType, HourMinuteSecondSegmentType, YearMonthDaySegmentType, YearMonthDayHourMinuteSegmentType, YearMonthDayHourMinuteSecondSegmentType, HourSegmentType, MinuteSegmentType, SecondSegmentType, SecondFractionType, SecondFractionSegmentType, AMPMSegmentType, TimezoneType, TimezoneSegmentType, EpochSegmentType, FillSegmentType, SEGMENT_TYPES;
     return {
         setters:[
             function (utils_1_1) {
@@ -746,8 +749,14 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 SegmentType.prototype.getSettings = function () {
                     return this.settings;
                 };
-                SegmentType.prototype.getName = function () {
-                    return this.constructor['name'];
+                SegmentType.prototype.getLabel = function () {
+                    return this.getStaticElement('label');
+                };
+                SegmentType.prototype.getID = function () {
+                    return this.getStaticElement('id');
+                };
+                SegmentType.prototype.getStaticElement = function (id) {
+                    return this.constructor[id];
                 };
                 return SegmentType;
             }());
@@ -767,7 +776,6 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                         _a[CaseStyle.Lower] = "lower",
                         _a[CaseStyle.Upper] = "UPPER",
                         _a[CaseStyle.Title] = "Title",
-                        _a[CaseStyle.Unknown] = "Unknown",
                         _a
                     );
                     this.settings.add(new segment_type_setting_1.DropdownSegmentTypeSetting("caseStyle", "Case Style", null, CaseStyle.Title, styles));
@@ -781,10 +789,9 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                     else if (/^[A-Z]+$/.test(str)) {
                         return CaseStyle.Upper;
                     }
-                    else if (/^[A-Z][a-z]+$/.test(str)) {
+                    else {
                         return CaseStyle.Title;
                     }
-                    return CaseStyle.Unknown;
                 };
                 StringSegmentType.prototype.setCaseStyle = function (token) {
                     this.settings.get("caseStyle").setValue(StringSegmentType.parseCaseStyle(token));
@@ -795,75 +802,70 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 return StringSegmentType;
             }(SegmentType));
             exports_5("StringSegmentType", StringSegmentType);
-            ShortDaySegmentType = (function (_super) {
-                __extends(ShortDaySegmentType, _super);
-                function ShortDaySegmentType(token) {
+            DayOfWeekSegmentType = (function (_super) {
+                __extends(DayOfWeekSegmentType, _super);
+                function DayOfWeekSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "ShortDay";
-                    if (ShortDaySegmentType.SHORT_DAYS.indexOf(token.toLowerCase()) !== -1) {
+                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("abbreviated", "Abbreviated", "Abbreviate the name (i.e. Mon,Tues,Wed)", true));
+                    if (DayOfWeekSegmentType.SHORT_DAYS.indexOf(token.toLowerCase()) !== -1) {
                         this.setCaseStyle(token);
+                        this.settings.setValue("abbreviated", true);
+                        this.valid = true;
+                    }
+                    else if (DayOfWeekSegmentType.DAYS.indexOf(token.toLowerCase()) !== -1) {
+                        this.setCaseStyle(token);
+                        this.settings.setValue("abbreviated", false);
                         this.valid = true;
                     }
                 }
-                ShortDaySegmentType.SHORT_DAYS = ["mon", "tues", "tue", "wed", "thu", "thurs", "fri", "sat", "sun"];
-                return ShortDaySegmentType;
+                DayOfWeekSegmentType.prototype.isAbbreviated = function () {
+                    return this.settings.get("abbreviated").getValue();
+                };
+                DayOfWeekSegmentType.id = "DayOfWee";
+                DayOfWeekSegmentType.label = "Day Of Week";
+                DayOfWeekSegmentType.SHORT_DAYS = ["mon", "tues", "tue", "wed", "thu", "thurs", "fri", "sat", "sun"];
+                DayOfWeekSegmentType.DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+                return DayOfWeekSegmentType;
             }(StringSegmentType));
-            exports_5("ShortDaySegmentType", ShortDaySegmentType);
-            LongDaySegmentType = (function (_super) {
-                __extends(LongDaySegmentType, _super);
-                function LongDaySegmentType(token) {
+            exports_5("DayOfWeekSegmentType", DayOfWeekSegmentType);
+            TextMonthSegmentType = (function (_super) {
+                __extends(TextMonthSegmentType, _super);
+                function TextMonthSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "LongDay";
-                    if (LongDaySegmentType.DAYS.indexOf(token.toLowerCase()) !== -1) {
+                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("abbreviated", "Abbreviated", "Abbreviate the name (i.e. Mon,Tues,Wed)", true));
+                    if (TextMonthSegmentType.SHORT_MONTHS.indexOf(token.toLowerCase()) !== -1) {
                         this.setCaseStyle(token);
+                        this.settings.setValue("abbreviated", true);
+                        this.valid = true;
+                    }
+                    else if (TextMonthSegmentType.MONTHS.indexOf(token.toLowerCase()) !== -1) {
+                        this.setCaseStyle(token);
+                        this.settings.setValue("abbreviated", false);
                         this.valid = true;
                     }
                 }
-                LongDaySegmentType.DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
-                return LongDaySegmentType;
-            }(StringSegmentType));
-            exports_5("LongDaySegmentType", LongDaySegmentType);
-            ShortMonthSegmentType = (function (_super) {
-                __extends(ShortMonthSegmentType, _super);
-                function ShortMonthSegmentType(token) {
-                    _super.call(this, token);
-                    this.name = "ShortMonth";
-                    if (ShortMonthSegmentType.SHORT_MONTHS.indexOf(token.toLowerCase()) !== -1) {
-                        this.setCaseStyle(token);
-                        this.valid = true;
-                    }
-                }
-                ShortMonthSegmentType.SHORT_MONTHS = [
+                TextMonthSegmentType.prototype.isAbbreviated = function () {
+                    return this.settings.get("abbreviated").getValue();
+                };
+                TextMonthSegmentType.id = "TextMonth";
+                TextMonthSegmentType.label = "Text Month";
+                TextMonthSegmentType.SHORT_MONTHS = [
                     "jan", "feb", "mar", "apr", "may", "jun",
                     "jul", "aug", "sep", "sept", "oct", "nov", "dec",
                 ];
-                return ShortMonthSegmentType;
-            }(StringSegmentType));
-            exports_5("ShortMonthSegmentType", ShortMonthSegmentType);
-            LongMonthSegmentType = (function (_super) {
-                __extends(LongMonthSegmentType, _super);
-                function LongMonthSegmentType(token) {
-                    _super.call(this, token);
-                    this.name = "LongMonth";
-                    if (LongMonthSegmentType.MONTHS.indexOf(token.toLowerCase()) !== -1) {
-                        this.setCaseStyle(token);
-                        this.valid = true;
-                    }
-                }
-                LongMonthSegmentType.MONTHS = [
+                TextMonthSegmentType.MONTHS = [
                     "january", "february", "march", "april", "may", "june",
                     "july", "august", "september", "october", "november", "december",
                 ];
-                return LongMonthSegmentType;
+                return TextMonthSegmentType;
             }(StringSegmentType));
-            exports_5("LongMonthSegmentType", LongMonthSegmentType);
+            exports_5("TextMonthSegmentType", TextMonthSegmentType);
             DaySegmentType = (function (_super) {
                 __extends(DaySegmentType, _super);
                 function DaySegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Day";
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("leadingZero", "Leading Zero", "Whether or not the day is padded with a leading zero.", true));
-                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("prettyEnding", "Pretty Ending", "Whether or not the day is suffixed with 'st', 'nd', 'rd', and 'th'.", false));
+                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("prettyEnding", "Pretty Ending", "Whether or not the day is suffixed with 'st', 'nd', 'rd' and 'th'.", false));
                     var ending;
                     if (token.length === 3) {
                         ending = token.substring(1, 3);
@@ -878,12 +880,12 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                     }
                     if ((token.length === 2 || token.length === 1) && utils_1.Utils.isNumber(token) && parseInt(token, 10) >= 1 && parseInt(token, 10) <= 31) {
                         if (token.length === 1) {
-                            this.settings.set("leadingZero", false);
+                            this.settings.setValue("leadingZero", false);
                         }
                         this.valid = true;
                     }
                     if (ending && DaySegmentType.DATE_ENDINGS.indexOf(ending.toLowerCase()) !== -1) {
-                        this.settings.set("prettyEnding", true);
+                        this.settings.setValue("prettyEnding", true);
                     }
                     else if (ending && DaySegmentType.DATE_ENDINGS.indexOf(ending.toLowerCase()) === -1) {
                         this.valid = false;
@@ -896,6 +898,8 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                     return this.settings.get("prettyEnding").getValue();
                 };
                 DaySegmentType.DATE_ENDINGS = ["st", "nd", "rd", "th"];
+                DaySegmentType.id = "Day";
+                DaySegmentType.label = "Day";
                 return DaySegmentType;
             }(StringSegmentType));
             exports_5("DaySegmentType", DaySegmentType);
@@ -903,11 +907,10 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(MonthSegmentType, _super);
                 function MonthSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Month";
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("leadingZero", "Leading Zero", "Whether or not the month is padded with a leading zero.", true));
                     if ((token.length === 2 || token.length === 1) && utils_1.Utils.isNumber(token) && parseInt(token, 10) >= 1 && parseInt(token, 10) <= 12) {
                         if (token.length === 1) {
-                            this.settings.set("leadingZero", false);
+                            this.settings.setValue("leadingZero", false);
                         }
                         this.valid = true;
                     }
@@ -915,6 +918,8 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 MonthSegmentType.prototype.isZeroPadded = function () {
                     return this.settings.get("leadingZero").getValue();
                 };
+                MonthSegmentType.id = "Month";
+                MonthSegmentType.label = "Month";
                 return MonthSegmentType;
             }(SegmentType));
             exports_5("MonthSegmentType", MonthSegmentType);
@@ -922,43 +927,36 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(YearSegmentType, _super);
                 function YearSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Year";
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("leadingZeroes", "Leading Zeroes", "Whether or not the year is padded with leading zeroes.", true));
-                    if (token.length === 4 && utils_1.Utils.isNumber(token)) {
+                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("twoDigit", "Two Digit", "Abbreviate the year to the last two digits.", false));
+                    if ((token.length === 4 || token.length === 2) && utils_1.Utils.isNumber(token)) {
+                        if (token.length === 2) {
+                            this.settings.setValue("twoDigit", true);
+                        }
                         this.valid = true;
                     }
                 }
                 YearSegmentType.prototype.isZeroPadded = function () {
                     return this.settings.get("leadingZeroes").getValue();
                 };
+                YearSegmentType.prototype.isTwoDigit = function () {
+                    return this.settings.get("twoDigit").getValue();
+                };
+                YearSegmentType.id = "Year";
+                YearSegmentType.label = "Year";
                 return YearSegmentType;
             }(SegmentType));
             exports_5("YearSegmentType", YearSegmentType);
-            ShortYearSegmentType = (function (_super) {
-                __extends(ShortYearSegmentType, _super);
-                function ShortYearSegmentType(token) {
-                    _super.call(this, token);
-                    this.name = "ShortYear";
-                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("leadingZero", "Leading Zero", "Whether or not the year is padded with a leading zero.", true));
-                    if (token.length === 2 && utils_1.Utils.isNumber(token)) {
-                        this.valid = true;
-                    }
-                }
-                ShortYearSegmentType.prototype.isZeroPadded = function () {
-                    return this.settings.get("leadingZero").getValue();
-                };
-                return ShortYearSegmentType;
-            }(SegmentType));
-            exports_5("ShortYearSegmentType", ShortYearSegmentType);
             HourMinuteSegmentType = (function (_super) {
                 __extends(HourMinuteSegmentType, _super);
                 function HourMinuteSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "HourMinute";
                     if (token.length === 4 && utils_1.Utils.isNumber(token)) {
                         this.valid = true;
                     }
                 }
+                HourMinuteSegmentType.id = "HourMinute";
+                HourMinuteSegmentType.label = "Hour and Minute";
                 return HourMinuteSegmentType;
             }(SegmentType));
             exports_5("HourMinuteSegmentType", HourMinuteSegmentType);
@@ -966,11 +964,12 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(HourMinuteSecondSegmentType, _super);
                 function HourMinuteSecondSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "HourMinuteSecond";
                     if (token.length === 6 && utils_1.Utils.isNumber(token)) {
                         this.valid = true;
                     }
                 }
+                HourMinuteSecondSegmentType.id = "HourMinuteSecond";
+                HourMinuteSecondSegmentType.label = "Hour, Minute and Second";
                 return HourMinuteSecondSegmentType;
             }(SegmentType));
             exports_5("HourMinuteSecondSegmentType", HourMinuteSecondSegmentType);
@@ -978,11 +977,12 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(YearMonthDaySegmentType, _super);
                 function YearMonthDaySegmentType(token) {
                     _super.call(this, token);
-                    this.name = "YearMonthDay";
                     if (token.length === 8 && utils_1.Utils.isNumber(token)) {
                         this.valid = true;
                     }
                 }
+                YearMonthDaySegmentType.id = "YearMonthDay";
+                YearMonthDaySegmentType.label = "Year, Month and Day";
                 return YearMonthDaySegmentType;
             }(SegmentType));
             exports_5("YearMonthDaySegmentType", YearMonthDaySegmentType);
@@ -990,11 +990,12 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(YearMonthDayHourMinuteSegmentType, _super);
                 function YearMonthDayHourMinuteSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "YearMonthDayHourMinute";
                     if (token.length === 12 && utils_1.Utils.isNumber(token)) {
                         this.valid = true;
                     }
                 }
+                YearMonthDayHourMinuteSegmentType.id = "YearMonthDayHourMinute";
+                YearMonthDayHourMinuteSegmentType.label = "Year, Month, Day, Hour and Minute";
                 return YearMonthDayHourMinuteSegmentType;
             }(SegmentType));
             exports_5("YearMonthDayHourMinuteSegmentType", YearMonthDayHourMinuteSegmentType);
@@ -1002,41 +1003,33 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(YearMonthDayHourMinuteSecondSegmentType, _super);
                 function YearMonthDayHourMinuteSecondSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "YearMonthDayHourMinuteSecond";
                     if (token.length === 14 && utils_1.Utils.isNumber(token)) {
                         this.valid = true;
                     }
                 }
+                YearMonthDayHourMinuteSecondSegmentType.id = "YearMonthDayHourMinuteSecond";
+                YearMonthDayHourMinuteSecondSegmentType.label = "Year, Month, Day, Hour, Minute and Second";
                 return YearMonthDayHourMinuteSecondSegmentType;
             }(SegmentType));
             exports_5("YearMonthDayHourMinuteSecondSegmentType", YearMonthDayHourMinuteSecondSegmentType);
-            MultiSegment = (function (_super) {
-                __extends(MultiSegment, _super);
-                function MultiSegment() {
-                    _super.apply(this, arguments);
-                }
-                return MultiSegment;
-            }(SegmentType));
-            exports_5("MultiSegment", MultiSegment);
             HourSegmentType = (function (_super) {
                 __extends(HourSegmentType, _super);
                 function HourSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Hour";
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("leadingZeroes", "Leading Zeroes", "Whether or not the year is padded with leading zeroes.", true));
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("twentyFour", "24-Hour", "Whether or not the hour is in 24-hour format.", false));
                     if ((token.length === 2 || token.length === 1) && utils_1.Utils.isNumber(token)) {
                         if (token.length === 1) {
-                            this.settings.set("leadingZeroes", false);
+                            this.settings.setValue("leadingZeroes", false);
                         }
                         if (parseInt(token, 10) > 12 || token === "00") {
-                            this.settings.set("twentyFour", true);
+                            this.settings.setValue("twentyFour", true);
                         }
                         this.valid = true;
                     }
                 }
                 HourSegmentType.prototype.setTwentyFour = function (value) {
-                    this.settings.set("twentyFour", value);
+                    this.settings.setValue("twentyFour", value);
                 };
                 HourSegmentType.prototype.getTwentyFour = function () {
                     return this.settings.get("twentyFour").getValue();
@@ -1044,6 +1037,8 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 HourSegmentType.prototype.isZeroPadded = function () {
                     return this.settings.get("leadingZeroes").getValue();
                 };
+                HourSegmentType.id = "Hour";
+                HourSegmentType.label = "Hour";
                 return HourSegmentType;
             }(SegmentType));
             exports_5("HourSegmentType", HourSegmentType);
@@ -1051,11 +1046,10 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(MinuteSegmentType, _super);
                 function MinuteSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Minute";
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("leadingZeroes", "Leading Zeroes", "Whether or not the minute is padded with leading zeroes.", true));
                     if ((token.length === 2 || token.length === 1) && utils_1.Utils.isNumber(token) && parseInt(token, 10) >= 0 && parseInt(token, 10) < 60) {
                         if (token.length === 1) {
-                            this.settings.set("leadingZeroes", false);
+                            this.settings.setValue("leadingZeroes", false);
                         }
                         this.valid = true;
                     }
@@ -1063,6 +1057,8 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 MinuteSegmentType.prototype.isZeroPadded = function () {
                     return this.settings.get("leadingZeroes").getValue();
                 };
+                MinuteSegmentType.id = "Minute";
+                MinuteSegmentType.label = "Minute";
                 return MinuteSegmentType;
             }(SegmentType));
             exports_5("MinuteSegmentType", MinuteSegmentType);
@@ -1070,11 +1066,10 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(SecondSegmentType, _super);
                 function SecondSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Second";
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("leadingZeroes", "Leading Zeroes", "Whether or not the second is padded with leading zeroes.", true));
                     if ((token.length === 2 || token.length === 1) && utils_1.Utils.isNumber(token) && parseInt(token, 10) >= 0 && parseInt(token, 10) < 60) {
                         if (token.length === 1) {
-                            this.settings.set("leadingZeroes", false);
+                            this.settings.setValue("leadingZeroes", false);
                         }
                         this.valid = true;
                     }
@@ -1082,131 +1077,140 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 SecondSegmentType.prototype.isZeroPadded = function () {
                     return this.settings.get("leadingZeroes").getValue();
                 };
+                SecondSegmentType.id = "Second";
+                SecondSegmentType.label = "Second";
                 return SecondSegmentType;
             }(SegmentType));
             exports_5("SecondSegmentType", SecondSegmentType);
-            MillisecondSegmentType = (function (_super) {
-                __extends(MillisecondSegmentType, _super);
-                function MillisecondSegmentType(token) {
+            (function (SecondFractionType) {
+                SecondFractionType[SecondFractionType["Milliseconds"] = 0] = "Milliseconds";
+                SecondFractionType[SecondFractionType["Microseconds"] = 1] = "Microseconds";
+                SecondFractionType[SecondFractionType["Nanoseconds"] = 2] = "Nanoseconds";
+            })(SecondFractionType || (SecondFractionType = {}));
+            exports_5("SecondFractionType", SecondFractionType);
+            SecondFractionSegmentType = (function (_super) {
+                __extends(SecondFractionSegmentType, _super);
+                function SecondFractionSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Millisecond";
-                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("nanoseconds", "Nanoseconds", "If this is nanoseconds or not.", false));
-                    if (utils_1.Utils.isNumber(token)) {
-                        this.valid = true;
-                        if (token.length > 3) {
-                            this.settings.set("nanoseconds", true);
-                        }
-                    }
-                }
-                return MillisecondSegmentType;
-            }(SegmentType));
-            exports_5("MillisecondSegmentType", MillisecondSegmentType);
-            AMPMSegmentType = (function (_super) {
-                __extends(AMPMSegmentType, _super);
-                function AMPMSegmentType(token) {
-                    _super.call(this, token);
-                    this.name = "AMPM";
-                    if (AMPMSegmentType.AMPM.indexOf(token.toLowerCase()) !== -1) {
-                        this.setCaseStyle(token);
-                        this.valid = true;
-                    }
-                }
-                AMPMSegmentType.AMPM = ["am", "a", "pm", "p"];
-                return AMPMSegmentType;
-            }(StringSegmentType));
-            exports_5("AMPMSegmentType", AMPMSegmentType);
-            ShortTimezoneSegmentType = (function (_super) {
-                __extends(ShortTimezoneSegmentType, _super);
-                function ShortTimezoneSegmentType(token) {
-                    _super.call(this, token);
-                    this.name = "ShortTimezone";
-                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("z", "Z", null, false));
-                    if (timezones_1.Timezones.SHORT_TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
-                        if (token.toLowerCase() === "z") {
-                            this.settings.set("z", true);
-                        }
-                        this.setCaseStyle(token);
-                        this.valid = true;
-                    }
-                }
-                return ShortTimezoneSegmentType;
-            }(StringSegmentType));
-            exports_5("ShortTimezoneSegmentType", ShortTimezoneSegmentType);
-            LongTimezoneSegmentType = (function (_super) {
-                __extends(LongTimezoneSegmentType, _super);
-                function LongTimezoneSegmentType(token) {
-                    _super.call(this, token);
-                    this.name = "LongTimezone";
-                    if (timezones_1.Timezones.TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
-                        this.setCaseStyle(token);
-                        this.valid = true;
-                    }
-                }
-                return LongTimezoneSegmentType;
-            }(StringSegmentType));
-            exports_5("LongTimezoneSegmentType", LongTimezoneSegmentType);
-            (function (TimezoneOffsetType) {
-                TimezoneOffsetType[TimezoneOffsetType["Hour"] = 0] = "Hour";
-                TimezoneOffsetType[TimezoneOffsetType["HourMinute"] = 1] = "HourMinute";
-                TimezoneOffsetType[TimezoneOffsetType["HourMinuteSecond"] = 2] = "HourMinuteSecond";
-                TimezoneOffsetType[TimezoneOffsetType["HourMinuteSeparated"] = 3] = "HourMinuteSeparated";
-                TimezoneOffsetType[TimezoneOffsetType["HourMinuteSecondSeparated"] = 4] = "HourMinuteSecondSeparated";
-            })(TimezoneOffsetType || (TimezoneOffsetType = {}));
-            exports_5("TimezoneOffsetType", TimezoneOffsetType);
-            ;
-            TimezoneOffsetSegmentType = (function (_super) {
-                __extends(TimezoneOffsetSegmentType, _super);
-                function TimezoneOffsetSegmentType(token) {
-                    _super.call(this, token);
-                    this.name = "TimezoneOffset";
-                    var types = (_a = {},
-                        _a[TimezoneOffsetType.Hour] = "+-XX",
-                        _a[TimezoneOffsetType.HourMinute] = "+-XXXX",
-                        _a[TimezoneOffsetType.HourMinuteSecond] = "+-XXXXXX",
-                        _a[TimezoneOffsetType.HourMinuteSeparated] = "+-XX:XX",
-                        _a[TimezoneOffsetType.HourMinuteSecondSeparated] = "+-XX:XX:XX",
+                    this.settings.add(new segment_type_setting_1.DropdownSegmentTypeSetting("precision", "Precision", "Precision to display.", token.length, (_a = {},
+                        _a[SecondFractionType.Milliseconds] = 'Milliseconds',
+                        _a[SecondFractionType.Microseconds] = 'Microseconds',
+                        _a[SecondFractionType.Nanoseconds] = 'Nanoseconds',
                         _a
-                    );
-                    this.settings.add(new segment_type_setting_1.DropdownSegmentTypeSetting("timezoneOffsetType", "Timezone Offset Type", null, TimezoneOffsetType.HourMinute, types));
-                    if (/^[-+](\d\d)((:\d\d){1,2}|(\d\d){1,2})?$/.test(token)) {
-                        if (/^[-+]\d{2}$/.test(token)) {
-                            this.settings.set("timezoneOffsetType", TimezoneOffsetType.Hour);
+                    )));
+                    if (utils_1.Utils.isNumber(token)) {
+                        if (token.length > 6) {
+                            this.settings.setValue("precision", SecondFractionType.Nanoseconds);
                         }
-                        else if (/^[-+]\d{4}$/.test(token)) {
-                            this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinute);
+                        else if (token.length > 3) {
+                            this.settings.setValue("precision", SecondFractionType.Microseconds);
                         }
-                        else if (/^[-+]\d{6}$/.test(token)) {
-                            this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinuteSecond);
-                        }
-                        else if (/^[-+]\d\d:\d\d$/.test(token)) {
-                            this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinuteSeparated);
-                        }
-                        else if (/^[-+]\d\d:\d\d:\d\d$/.test(token)) {
-                            this.settings.set("timezoneOffsetType", TimezoneOffsetType.HourMinuteSecondSeparated);
+                        else {
+                            this.settings.setValue("precision", SecondFractionType.Milliseconds);
                         }
                         this.valid = true;
                     }
                     var _a;
                 }
-                TimezoneOffsetSegmentType.prototype.getTimezoneOffsetType = function () {
-                    return parseInt(this.settings.get("timezoneOffsetType").getValue(), 10);
+                SecondFractionSegmentType.prototype.getPrecision = function () {
+                    return this.settings.get("precision").getValue();
                 };
-                return TimezoneOffsetSegmentType;
+                SecondFractionSegmentType.id = "SecondFraction";
+                SecondFractionSegmentType.label = "Second Fraction";
+                return SecondFractionSegmentType;
             }(SegmentType));
-            exports_5("TimezoneOffsetSegmentType", TimezoneOffsetSegmentType);
+            exports_5("SecondFractionSegmentType", SecondFractionSegmentType);
+            AMPMSegmentType = (function (_super) {
+                __extends(AMPMSegmentType, _super);
+                function AMPMSegmentType(token) {
+                    _super.call(this, token);
+                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("periods", "Periods", "Whether or not to put periods between ampm.", token.indexOf('.') !== -1));
+                    this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("abbreviated", "Abbreviated", "Use a/p instead of am/pm", token.length === 1));
+                    if (AMPMSegmentType.AMPM.indexOf(token.toLowerCase()) !== -1) {
+                        this.setCaseStyle(token);
+                        this.valid = true;
+                    }
+                }
+                AMPMSegmentType.prototype.isPeriods = function () {
+                    return this.settings.get("periods").getValue();
+                };
+                AMPMSegmentType.prototype.isAbbreviated = function () {
+                    return this.settings.get("abbreviated").getValue();
+                };
+                AMPMSegmentType.AMPM = ["am", "a", "pm", "p"];
+                AMPMSegmentType.id = "AMPM";
+                AMPMSegmentType.label = "AM/PM";
+                return AMPMSegmentType;
+            }(StringSegmentType));
+            exports_5("AMPMSegmentType", AMPMSegmentType);
+            (function (TimezoneType) {
+                TimezoneType[TimezoneType["Hour"] = 0] = "Hour";
+                TimezoneType[TimezoneType["HourMinute"] = 1] = "HourMinute";
+                TimezoneType[TimezoneType["HourMinuteSeparated"] = 2] = "HourMinuteSeparated";
+                TimezoneType[TimezoneType["Short"] = 3] = "Short";
+                TimezoneType[TimezoneType["Long"] = 4] = "Long";
+            })(TimezoneType || (TimezoneType = {}));
+            exports_5("TimezoneType", TimezoneType);
+            ;
+            TimezoneSegmentType = (function (_super) {
+                __extends(TimezoneSegmentType, _super);
+                function TimezoneSegmentType(token) {
+                    _super.call(this, token);
+                    var types = (_a = {},
+                        _a[TimezoneType.Hour] = "+-XX",
+                        _a[TimezoneType.HourMinute] = "+-XXXX or Zulu (Z)",
+                        _a[TimezoneType.HourMinuteSeparated] = "+-XX:XX",
+                        _a[TimezoneType.Short] = "PST/GMT/CEST etc.",
+                        _a[TimezoneType.Long] = "America/Pacific, etc.",
+                        _a
+                    );
+                    this.settings.add(new segment_type_setting_1.DropdownSegmentTypeSetting("timezoneType", "Timezone  Type", null, TimezoneType.HourMinute, types));
+                    this.valid = true;
+                    if (/^[-+]\d{2}$/.test(token)) {
+                        this.settings.setValue("timezoneType", TimezoneType.Hour);
+                    }
+                    else if (token.toLowerCase() === 'z' || /^[-+]\d{4}$/.test(token)) {
+                        this.settings.setValue("timezoneType", TimezoneType.HourMinute);
+                    }
+                    else if (/^[-+]\d\d:\d\d$/.test(token)) {
+                        this.settings.setValue("timezoneType", TimezoneType.HourMinuteSeparated);
+                    }
+                    else if (timezones_1.Timezones.SHORT_TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
+                        this.settings.setValue("timezoneType", TimezoneType.Short);
+                    }
+                    else if (timezones_1.Timezones.TIMEZONES.indexOf(token.toLowerCase()) !== -1) {
+                        this.settings.setValue("timezoneType", TimezoneType.Long);
+                    }
+                    else {
+                        this.valid = false;
+                    }
+                    var _a;
+                }
+                TimezoneSegmentType.prototype.getTimezoneType = function () {
+                    return parseInt(this.settings.get("timezoneType").getValue(), 10);
+                };
+                TimezoneSegmentType.id = "Timezone";
+                TimezoneSegmentType.label = "Timezone ";
+                return TimezoneSegmentType;
+            }(SegmentType));
+            exports_5("TimezoneSegmentType", TimezoneSegmentType);
             EpochSegmentType = (function (_super) {
                 __extends(EpochSegmentType, _super);
                 function EpochSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Epoch";
                     this.settings.add(new segment_type_setting_1.BooleanSegmentTypeSetting("milliseconds", "Milliseconds", "Whether or not the epoch is in milliseconds.", false));
                     if (utils_1.Utils.isNumber(token)) {
                         if (parseInt(token, 10) > 2147483647) {
-                            this.settings.set("milliseconds", true);
+                            this.settings.setValue("milliseconds", true);
                         }
                         this.valid = true;
                     }
                 }
+                EpochSegmentType.prototype.getMilliseconds = function () {
+                    return this.settings.get("milliseconds").getValue();
+                };
+                EpochSegmentType.id = "Epoch";
+                EpochSegmentType.label = "Unix Epoch";
                 return EpochSegmentType;
             }(SegmentType));
             exports_5("EpochSegmentType", EpochSegmentType);
@@ -1214,23 +1218,24 @@ System.register("app/segment-type", ["app/utils", "app/timezones", "app/segment-
                 __extends(FillSegmentType, _super);
                 function FillSegmentType(token) {
                     _super.call(this, token);
-                    this.name = "Fill";
                     this.settings.add(new segment_type_setting_1.StringSegmentTypeSetting("token", "String", "The content of the fill", token));
                     this.valid = true;
                 }
+                FillSegmentType.prototype.getToken = function () {
+                    return this.settings.get("token").getValue();
+                };
+                FillSegmentType.id = "Fill";
+                FillSegmentType.label = "Plain Text";
                 return FillSegmentType;
             }(SegmentType));
             exports_5("FillSegmentType", FillSegmentType);
             exports_5("SEGMENT_TYPES", SEGMENT_TYPES = [
-                ShortDaySegmentType, LongDaySegmentType, DaySegmentType,
-                ShortMonthSegmentType, LongMonthSegmentType, MonthSegmentType,
-                YearSegmentType, ShortYearSegmentType,
+                DayOfWeekSegmentType, DaySegmentType, TextMonthSegmentType, MonthSegmentType,
+                YearSegmentType, HourSegmentType, MinuteSegmentType,
+                SecondSegmentType, SecondFractionSegmentType, AMPMSegmentType,
+                TimezoneSegmentType, EpochSegmentType, FillSegmentType,
                 HourMinuteSegmentType, HourMinuteSecondSegmentType, YearMonthDaySegmentType,
                 YearMonthDayHourMinuteSegmentType, YearMonthDayHourMinuteSecondSegmentType,
-                HourSegmentType, MinuteSegmentType,
-                SecondSegmentType, MillisecondSegmentType, AMPMSegmentType,
-                ShortTimezoneSegmentType, LongTimezoneSegmentType, TimezoneOffsetSegmentType,
-                EpochSegmentType, FillSegmentType,
             ]);
         }
     }
@@ -1256,18 +1261,18 @@ System.register("app/segment", ["app/segment-type"], function(exports_6, context
                         var segment = Object.create(segmentType.prototype);
                         segment.constructor.apply(segment, new Array(token));
                         if (segment.isValid()) {
-                            this.types[segmentType.name] = segment;
+                            this.types[segmentType.id] = segment;
                         }
                         else {
-                            this.types[segmentType.name] = null;
+                            this.types[segmentType.id] = null;
                         }
                     }
                 }
                 Segment.prototype.has = function (segmentType) {
-                    return this.types[segmentType.name] !== undefined && this.types[segmentType.name] !== null;
+                    return this.types[segmentType.id] !== undefined && this.types[segmentType.id] !== null;
                 };
                 Segment.prototype.hasEnabled = function (segmentType) {
-                    return !(!this.types[segmentType.name] || !this.types[segmentType.name].isEnabled());
+                    return !(!this.types[segmentType.id] || !this.types[segmentType.id].isEnabled());
                 };
                 Segment.prototype.getTypes = function () {
                     var types = [];
@@ -1277,6 +1282,14 @@ System.register("app/segment", ["app/segment-type"], function(exports_6, context
                         }
                     }
                     return types;
+                };
+                Segment.prototype.getTypesSorted = function () {
+                    var _this = this;
+                    return this.getTypes().sort(function (a, b) {
+                        var valA = (a.getID() === _this.getSelectedType().id) ? 3 : (a.isEnabled() ? 2 : (a.isValid() ? 1 : 0));
+                        var valB = (b.getID() === _this.getSelectedType().id) ? 3 : (b.isEnabled() ? 2 : (b.isValid() ? 1 : 0));
+                        return valB - valA;
+                    });
                 };
                 Segment.prototype.getEnabledTypes = function () {
                     var types = [];
@@ -1289,7 +1302,7 @@ System.register("app/segment", ["app/segment-type"], function(exports_6, context
                 };
                 Segment.prototype.getType = function (segmentType) {
                     if (this.has(segmentType)) {
-                        return this.types[segmentType.name];
+                        return this.types[segmentType.id];
                     }
                     return null;
                 };
@@ -1306,19 +1319,19 @@ System.register("app/segment", ["app/segment-type"], function(exports_6, context
                     return count;
                 };
                 Segment.prototype.enableType = function (segmentType) {
-                    if (this.types[segmentType.name]) {
-                        this.types[segmentType.name].enable();
+                    if (this.types[segmentType.id]) {
+                        this.types[segmentType.id].enable();
                     }
                 };
                 Segment.prototype.disableType = function (segmentType) {
-                    if (this.types[segmentType.name]) {
-                        this.types[segmentType.name].disable();
+                    if (this.types[segmentType.id]) {
+                        this.types[segmentType.id].disable();
                     }
                 };
                 Segment.prototype.setType = function (segmentType) {
                     this.enableType(segmentType);
                     for (var i = 0; i < segment_type_1.SEGMENT_TYPES.length; i++) {
-                        if (segmentType.name !== segment_type_1.SEGMENT_TYPES[i].name) {
+                        if (segmentType.id !== segment_type_1.SEGMENT_TYPES[i].id) {
                             this.disableType(segment_type_1.SEGMENT_TYPES[i]);
                         }
                     }
@@ -1336,36 +1349,38 @@ System.register("app/segment", ["app/segment-type"], function(exports_6, context
                 Segment.prototype.getOnlySegmentType = function () {
                     var found = null;
                     for (var i = 0; i < segment_type_1.SEGMENT_TYPES.length; i++) {
-                        if (this.types[segment_type_1.SEGMENT_TYPES[i].name] && this.types[segment_type_1.SEGMENT_TYPES[i].name].isEnabled()) {
+                        if (this.types[segment_type_1.SEGMENT_TYPES[i].id] && this.types[segment_type_1.SEGMENT_TYPES[i].id].isEnabled()) {
                             if (found) {
                                 return null;
                             }
-                            found = this.types[segment_type_1.SEGMENT_TYPES[i].name];
+                            found = this.types[segment_type_1.SEGMENT_TYPES[i].id];
                         }
                     }
                     return found;
                 };
                 Segment.prototype.setSelected = function (segmentType) {
                     if (this.has(segmentType)) {
-                        this.enableType(segmentType);
                         this.selected = segmentType;
                     }
                 };
-                Segment.prototype.setSelectedName = function (segmentTypeName) {
+                Segment.prototype.setSelectedID = function (segmentTypeID) {
                     for (var i = 0; i < segment_type_1.SEGMENT_TYPES.length; i++) {
-                        if (segment_type_1.SEGMENT_TYPES[i].name === segmentTypeName) {
+                        if (segment_type_1.SEGMENT_TYPES[i].id === segmentTypeID) {
                             this.setSelected(segment_type_1.SEGMENT_TYPES[i]);
                         }
                     }
                 };
-                Segment.prototype.getSelected = function () {
+                Segment.prototype.getSelectedType = function () {
                     return this.selected;
+                };
+                Segment.prototype.getSelected = function () {
+                    return this.getType(this.selected);
                 };
                 Segment.prototype.toString = function () {
                     var str = "\"" + this.token + "\"";
                     for (var i = 0; i < segment_type_1.SEGMENT_TYPES.length; i++) {
-                        if (this.types[segment_type_1.SEGMENT_TYPES[i].name] && this.types[segment_type_1.SEGMENT_TYPES[i].name].isEnabled()) {
-                            str += ", " + segment_type_1.SEGMENT_TYPES[i].name;
+                        if (this.types[segment_type_1.SEGMENT_TYPES[i].id] && this.types[segment_type_1.SEGMENT_TYPES[i].id].isEnabled()) {
+                            str += ", " + segment_type_1.SEGMENT_TYPES[i].id;
                         }
                     }
                     return str;
@@ -1396,7 +1411,7 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                     for (var i = 0; i < this.segments.length; i++) {
                         var enabledTypes = this.segments[i].getEnabledTypes();
                         if (enabledTypes.length > 0) {
-                            this.segments[i].setSelectedName(enabledTypes[0].getName());
+                            this.segments[i].setSelectedID(enabledTypes[0].getID());
                         }
                     }
                 }
@@ -1418,7 +1433,7 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                     $('#edit-segment-modal .btn-primary').click(function () {
                         var val = $('#edit-segment-modal input').val();
                         var newSegment = new segment_1.Segment(val);
-                        newSegment.setSelected(segment.getSelected());
+                        newSegment.setSelected(segment.getSelectedType());
                         if (newSegment.getSelected() === null) {
                             newSegment.setSelected(segment_type_2.FillSegmentType);
                         }
@@ -1440,7 +1455,7 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                 DateTime.prototype.newSegment = function (segment) {
                     var _this = this;
                     var segmentId = this.segments.indexOf(segment);
-                    $('#new-segment-modal input').val(segment.getToken());
+                    $('#new-segment-modal input').val();
                     $('#new-segment-modal .btn-primary').off('click');
                     $('#new-segment-modal .btn-primary').click(function () {
                         var val = $('#new-segment-modal input').val();
@@ -1451,43 +1466,18 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                     });
                     $('#new-segment-modal').modal();
                 };
-                DateTime.prototype.joinSegments = function () {
+                DateTime.prototype.joinSegment = function (segment) {
                     var _this = this;
-                    $('#join-segments-modal .segments').html('');
-                    $('#join-segments-modal .slider').html('');
-                    var start = Math.floor(this.segments.length / 2);
-                    var end = Math.floor(Math.min(this.segments.length - 1, this.segments.length / 2 + 1));
-                    var ele;
-                    for (var i = 0; i < this.segments.length; i++) {
-                        ele = $('<li>' + this.segments[i].getToken() + '</li>');
-                        if (i === start || i === end) {
-                            ele.addClass('joining');
-                        }
-                        $('#join-segments-modal .segments').append(ele);
-                    }
-                    $('#join-segments-modal .slider').slider({
-                        max: this.segments.length - 1,
-                        min: 0,
-                        range: true,
-                        slide: function (e, ui) {
-                            var lis = $('#join-segments-modal .segments li');
-                            lis.removeClass('joining');
-                            for (var i = ui.values[0]; i <= ui.values[1]; i++) {
-                                $(lis[i]).addClass('joining');
-                            }
-                        },
-                        values: [start, end],
-                    });
+                    var segmentId = this.segments.indexOf(segment);
+                    $('#join-segments-modal .segment1').text('"' + this.segments[segmentId].getToken() + '"');
+                    $('#join-segments-modal .segment2').text('"' + this.segments[segmentId + 1].getToken() + '"');
+                    $('#join-segments-modal .segment-out').text('"' + this.segments[segmentId].getToken() + this.segments[segmentId + 1].getToken() + '"');
                     $('#join-segments-modal .btn-primary').off('click');
                     $('#join-segments-modal .btn-primary').click(function () {
-                        var range = $('#join-segments-modal .slider').slider('option', 'values');
-                        var token = '';
-                        for (var i = range[0]; i <= range[1]; i++) {
-                            token += _this.segments[i].getToken();
-                        }
+                        var token = _this.segments[segmentId].getToken() + _this.segments[segmentId + 1].getToken();
                         var newSegment = new segment_1.Segment(token);
                         newSegment.setSelected(segment_type_2.FillSegmentType);
-                        _this.segments.splice(range[0], range[1] - range[0] + 1, newSegment);
+                        _this.segments.splice(segmentId, 2, newSegment);
                         $('#join-segments-modal').modal('hide');
                     });
                     $('#join-segments-modal').modal();
@@ -1498,12 +1488,13 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                     var token = this.segments[segmentId].getToken();
                     var newSegment;
                     var newSegments = [];
-                    var ul = $('#split-segment-modal .characters');
+                    var ul = $('#split-segment-modal .split-characters');
                     ul.html('');
                     for (var i = 0; i < token.length; i++) {
                         ul.append('<li>' + token[i] + '</li>');
                         if (i !== token.length - 1) {
-                            ul.append('<input type="checkbox">');
+                            var id = "split-segment-checkbox_" + i;
+                            ul.append('<input type="checkbox" id="' + id + '"><label for="' + id + '"><span class="glyphicon glyphicon-scissors"></label>');
                         }
                     }
                     $('#split-segment-modal .btn-primary').off('click');
@@ -1511,7 +1502,7 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                         var start = 0;
                         var end = 0;
                         var substringIndices = [];
-                        var checkboxes = $('#split-segment-modal .characters input');
+                        var checkboxes = $('#split-segment-modal .split-characters input');
                         for (var i = 0; i < checkboxes.length; i++) {
                             if (checkboxes[i].checked) {
                                 substringIndices.push(i + 1);
@@ -1610,10 +1601,9 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                         if ((segment.has(segment_type_2.MonthSegmentType) || segment.has(segment_type_2.DaySegmentType)) && i + 2 < segments.length && DateTime.DATE_SEPARATORS.indexOf(segments[i + 1].getToken()) !== -1
                             && (segments[i + 2].has(segment_type_2.DaySegmentType) || segments[i + 2].has(segment_type_2.MonthSegmentType))) {
                             var j = i;
-                            if (i + 4 < segments.length && DateTime.DATE_SEPARATORS.indexOf(segments[i + 3].getToken()) !== -1 && (segments[i + 4].has(segment_type_2.YearSegmentType) || segments[i + 4].has(segment_type_2.ShortYearSegmentType))) {
+                            if (i + 4 < segments.length && DateTime.DATE_SEPARATORS.indexOf(segments[i + 3].getToken()) !== -1 && segments[i + 4].has(segment_type_2.YearSegmentType)) {
                                 this.disableAllOfSegmentType(segments, segment_type_2.YearSegmentType);
-                                this.disableAllOfSegmentType(segments, segment_type_2.ShortYearSegmentType);
-                                segments[i + 4].setTypes([segment_type_2.YearSegmentType, segment_type_2.ShortYearSegmentType]);
+                                segments[i + 4].setTypes([segment_type_2.YearSegmentType]);
                                 j += 2;
                             }
                             this.disableAllOfSegmentType(segments, segment_type_2.MonthSegmentType);
@@ -1660,22 +1650,22 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                             i = j + 2;
                             continue;
                         }
-                        if (segment.has(segment_type_2.SecondSegmentType) && i + 2 < segments.length && segments[i + 1].getToken() === "." && segments[i + 2].has(segment_type_2.MillisecondSegmentType)) {
+                        if (segment.has(segment_type_2.SecondSegmentType) && i + 2 < segments.length && segments[i + 1].getToken() === "." && segments[i + 2].has(segment_type_2.SecondFractionSegmentType)) {
                             this.disableAllOfSegmentType(segments, segment_type_2.SecondSegmentType);
-                            this.disableAllOfSegmentType(segments, segment_type_2.MillisecondSegmentType);
+                            this.disableAllOfSegmentType(segments, segment_type_2.SecondFractionSegmentType);
                             segment.setType(segment_type_2.SecondSegmentType);
-                            segments[i + 2].setType(segment_type_2.MillisecondSegmentType);
+                            segments[i + 2].setType(segment_type_2.SecondFractionSegmentType);
                             i += 2;
                             continue;
                         }
-                        if (segment.has(segment_type_2.MillisecondSegmentType)) {
-                            segment.disableType(segment_type_2.MillisecondSegmentType);
+                        if (segment.has(segment_type_2.SecondFractionSegmentType)) {
+                            segment.disableType(segment_type_2.SecondFractionSegmentType);
                         }
                     }
                     for (var i = 0; i < segments.length; i++) {
                         if (i + 1 < segments.length &&
-                            segments[i].getOnlySegmentType() !== null && segments[i].getOnlySegmentType().getName() === segment_type_2.FillSegmentType.name &&
-                            segments[i + 1].getOnlySegmentType() !== null && segments[i + 1].getOnlySegmentType().getName() === segment_type_2.FillSegmentType.name) {
+                            segments[i].getOnlySegmentType() !== null && segments[i].getOnlySegmentType().getID() === segment_type_2.FillSegmentType.id &&
+                            segments[i + 1].getOnlySegmentType() !== null && segments[i + 1].getOnlySegmentType().getID() === segment_type_2.FillSegmentType.id) {
                             segments.splice(i, 2, new segment_1.Segment(segments[i].getToken() + segments[i + 1].getToken()));
                             i -= 1;
                             continue;
@@ -1685,13 +1675,10 @@ System.register("app/datetime", ["app/segment", "app/segment-type"], function(ex
                         }
                     }
                     var segmentTypeEquivalences = [
-                        [segment_type_2.YearSegmentType, segment_type_2.ShortYearSegmentType],
-                        [segment_type_2.LongMonthSegmentType, segment_type_2.ShortMonthSegmentType, segment_type_2.MonthSegmentType],
-                        [segment_type_2.LongDaySegmentType, segment_type_2.ShortDaySegmentType],
+                        [segment_type_2.TextMonthSegmentType, segment_type_2.MonthSegmentType],
                         [segment_type_2.HourSegmentType, segment_type_2.HourMinuteSegmentType, segment_type_2.HourMinuteSecondSegmentType],
                         [segment_type_2.MinuteSegmentType, segment_type_2.HourMinuteSegmentType, segment_type_2.HourMinuteSecondSegmentType],
                         [segment_type_2.SecondSegmentType, segment_type_2.HourMinuteSecondSegmentType],
-                        [segment_type_2.LongTimezoneSegmentType, segment_type_2.ShortTimezoneSegmentType, segment_type_2.TimezoneOffsetSegmentType],
                     ];
                     for (var i = 0; i < segment_type_2.SEGMENT_TYPES.length; i++) {
                         segmentTypeEquivalences.unshift([segment_type_2.SEGMENT_TYPES[i]]);
@@ -1778,7 +1765,7 @@ System.register("app/segment-type-setting.component", ['angular2/core', "app/map
                     core_2.Component({
                         inputs: ['segmentTypeSetting'],
                         selector: 'booleanSegmentTypeSetting',
-                        template: "\n    <input class=\"segmentTypeSetting booleanSetting\" name=\"{{segmentTypeSetting.name}}\" type='checkbox' placeholder=\"{{segmentTypeSetting.placeholder}}\" [(ngModel)]=\"segmentTypeSetting.value\">\n    <label attr.for=\"{{segmentTypeSetting.name}}\">{{segmentTypeSetting.label}}</label>\n  ",
+                        template: "\n    <input class=\"segmentTypeSetting booleanSetting\" name=\"{{segmentTypeSetting.name}}\" type='checkbox' placeholder=\"{{segmentTypeSetting.placeholder}}\" [(ngModel)]=\"segmentTypeSetting.value\">\n    <label attr.for=\"{{segmentTypeSetting.name}}\" attr.title=\"{{segmentTypeSetting.getHelpText()}}\">{{segmentTypeSetting.label}}</label>\n  ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], BooleanSegmentTypeSettingComponent);
@@ -1792,7 +1779,7 @@ System.register("app/segment-type-setting.component", ['angular2/core', "app/map
                     core_2.Component({
                         inputs: ['segmentTypeSetting'],
                         selector: 'stringSegmentTypeSetting',
-                        template: "\n    <input class=\"segmentTypeSetting stringSetting\" name=\"{{segmentTypeSetting.name}}\" type='text' placeholder=\"{{segmentTypeSetting.placeholder}}\" [(ngModel)]=\"segmentTypeSetting.value\">\n    <label attr.for=\"{{segmentTypeSetting.name}}\">{{segmentTypeSetting.label}}</label>\n  ",
+                        template: "\n    <input class=\"segmentTypeSetting stringSetting\" name=\"{{segmentTypeSetting.name}}\" type='text' placeholder=\"{{segmentTypeSetting.placeholder}}\" [(ngModel)]=\"segmentTypeSetting.value\">\n    <label attr.for=\"{{segmentTypeSetting.name}}\" attr.title=\"{{segmentTypeSetting.getHelpText()}}\">{{segmentTypeSetting.label}}</label>\n  ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], StringSegmentTypeSettingComponent);
@@ -1807,7 +1794,7 @@ System.register("app/segment-type-setting.component", ['angular2/core', "app/map
                         inputs: ['segmentTypeSetting'],
                         pipes: [map_to_iterable_directive_1.MapToIterable],
                         selector: 'dropdownSegmentTypeSetting',
-                        template: "\n    <select class=\"segmentTypeSetting dropdownSetting\" [(ngModel)]=\"segmentTypeSetting.value\">\n      <label>{{segmentTypeSetting.label}}</label>\n      <option *ngFor=\"#possibleValue of segmentTypeSetting.possibleValues | mapToIterable\" [value]=\"possibleValue.key\">\n        {{possibleValue.val}}\n      </option>\n    </select>\n  ",
+                        template: "\n    <label attr.title=\"{{segmentTypeSetting.getHelpText()}}\">{{segmentTypeSetting.label}}</label>\n    <select class=\"segmentTypeSetting dropdownSetting\" [(ngModel)]=\"segmentTypeSetting.value\">\n      <option *ngFor=\"#possibleValue of segmentTypeSetting.possibleValues | mapToIterable\" [value]=\"possibleValue.key\">\n        {{possibleValue.val}}\n      </option>\n    </select>\n  ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], DropdownSegmentTypeSettingComponent);
@@ -1885,9 +1872,9 @@ System.register("app/segment-type.component", ['angular2/core', "app/segment-typ
                 SegmentTypeComponent = __decorate([
                     core_4.Component({
                         directives: [segment_type_settings_component_1.SegmentTypeSettingsComponent],
-                        inputs: ['segmentType', 'selected'],
+                        inputs: ['segmentType', 'selected', 'hidden'],
                         selector: 'segmentType',
-                        template: "\n      <div class=\"segmentType\" *ngIf=\"segmentType.valid\" [class.disabled]=\"!segmentType.enabled\" [class.selected]=\"selected\">\n        {{segmentType.name}}\n        <segmentTypeSettings [segmentTypeSettings]=\"segmentType.getSettings()\"></segmentTypeSettings>\n      </div>\n    ",
+                        template: "\n      <div class=\"segmentType\" *ngIf=\"segmentType.valid\" [class.hidden]=\"!segmentType.enabled && hidden && !selected\" [class.disabled]=\"!segmentType.enabled && !selected\" [class.selected]=\"selected\">\n        {{segmentType.getLabel()}}\n        <segmentTypeSettings [segmentTypeSettings]=\"segmentType.getSettings()\"></segmentTypeSettings>\n      </div>\n    ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], SegmentTypeComponent);
@@ -1913,22 +1900,26 @@ System.register("app/segment.component", ['angular2/core', "app/segment-type.com
         execute: function() {
             SegmentComponent = (function () {
                 function SegmentComponent() {
+                    this.showDisabled = false;
                 }
                 SegmentComponent.prototype.setSelected = function (segment, segmentType) {
-                    segment.setSelectedName(segmentType.getName());
+                    segment.setSelectedID(segmentType.getID());
+                };
+                SegmentComponent.prototype.toggleDisabled = function () {
+                    this.showDisabled = !this.showDisabled;
                 };
                 SegmentComponent.prototype.isSelected = function (segment, segmentType) {
                     if (!segment.getSelected()) {
                         return false;
                     }
-                    return segment.getSelected().name === segmentType.getName();
+                    return segment.getSelectedType().id === segmentType.getID();
                 };
                 SegmentComponent = __decorate([
                     core_5.Component({
                         directives: [segment_type_component_1.SegmentTypeComponent],
                         inputs: ['segment', 'datetime'],
                         selector: 'segment',
-                        template: "\n    <div class=\"segment\">\n      Token: {{segment.token}} (<a (click)=\"datetime.splitSegment(segment)\">Split</a> | <a (click)=\"datetime.editSegment(segment)\">Edit</a> | <a (click)=\"datetime.deleteSegment(segment)\">Delete</a>)\n      <segmentType *ngFor=\"#segmentType of segment.getTypes()\" [segmentType]=\"segmentType\" (click)=\"setSelected(segment,segmentType)\" [selected]=\"isSelected(segment, segmentType)\"></segmentType>\n    </div>\n  ",
+                        template: "\n    <div class=\"segment\">\n      <pre class=\"token\">{{segment.token}}</pre>\n      <div><a (click)=\"datetime.splitSegment(segment)\">Split</a> | <a (click)=\"datetime.editSegment(segment)\">Edit</a> | <a (click)=\"datetime.deleteSegment(segment)\">Delete</a></div>\n      <segmentType *ngFor=\"#segmentType of segment.getTypes()\" [segmentType]=\"segmentType\" (click)=\"setSelected(segment,segmentType)\" [hidden]=\"!showDisabled\" [selected]=\"isSelected(segment, segmentType)\"></segmentType>\n      <div class=\"segment-type-expander\" (click)=\"toggleDisabled()\">&darr;</div>\n    </div>\n  ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], SegmentComponent);
@@ -1960,7 +1951,7 @@ System.register("app/datetime.component", ['angular2/core', "app/segment.compone
                         directives: [segment_component_1.SegmentComponent],
                         inputs: ['datetime'],
                         selector: 'datetime',
-                        template: "\n      <div class=\"datetime\" *ngIf=\"datetime\">\n        <div>{{datetime.toString()}}</div>\n        <a (click)=\"datetime.joinSegments()\">Join Segments</a>\n        <div *ngFor=\"#segment of datetime.segments\">\n          <segment [segment]=\"segment\" [datetime]=\"datetime\">Segment</segment>\n          <a (click)=\"datetime.newSegment(segment)\">New Segment</a>\n        </div>\n      </div>\n    ",
+                        template: "\n      <div class=\"datetime\" *ngIf=\"datetime\">\n        <span *ngFor=\"#segment of datetime.segments; #last=last\" class=\"segment-container\">\n          <div class=\"segment-container-body\">\n            <segment [segment]=\"segment\" [datetime]=\"datetime\">Segment</segment>\n          </div>\n          <div class=\"segment-buttons\">\n            <div class=\"insert-segment\">\n              <span class=\"glyphicon glyphicon-plus\" (click)=\"datetime.newSegment(segment)\" title=\"Insert Segment\"> </span>\n            </div>\n            <div class=\"merge-segment\">\n              <span class=\"glyphicon glyphicon-resize-small\" (click)=\"datetime.joinSegment(segment)\" title=\"Merge Segments\"> </span>\n            </div>\n          </div>\n        </span>\n      </div>\n    ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], DateTimeComponent);
@@ -2010,17 +2001,134 @@ System.register("app/dateformats/dateformat-segment", [], function(exports_14, c
         }
     }
 });
-System.register("app/dateformats/dateformat", [], function(exports_15, context_15) {
+System.register("app/dateformats/dateformat", ["app/segment-type"], function(exports_15, context_15) {
     "use strict";
     var __moduleName = context_15 && context_15.id;
-    var DateFormat;
+    var segment_type_3;
+    var UnhandledSegmentTypeError, DateFormat;
     return {
-        setters:[],
+        setters:[
+            function (segment_type_3_1) {
+                segment_type_3 = segment_type_3_1;
+            }],
         execute: function() {
+            UnhandledSegmentTypeError = (function (_super) {
+                __extends(UnhandledSegmentTypeError, _super);
+                function UnhandledSegmentTypeError(segmentType) {
+                    _super.call(this, "Unhandled segmentType of type: " + segmentType.id);
+                }
+                return UnhandledSegmentTypeError;
+            }(Error));
             DateFormat = (function () {
                 function DateFormat(datetime) {
                     this.datetime = datetime;
                 }
+                DateFormat.prototype.getSegments = function () {
+                    var format = [];
+                    var segments = this.datetime.getSegments();
+                    var segmentType;
+                    for (var i = 0; i < segments.length; i++) {
+                        var segment = segments[i];
+                        switch (segment.getSelectedType()) {
+                            case segment_type_3.DayOfWeekSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getDayOfWeekFormat(segmentType.getCaseStyle(), segmentType.isAbbreviated()));
+                                break;
+                            case segment_type_3.TextMonthSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getTextMonthFormat(segmentType.getCaseStyle(), segmentType.isAbbreviated()));
+                                break;
+                            case segment_type_3.DaySegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getDayFormat(segmentType.getCaseStyle(), segmentType.isPrettyEnding(), segmentType.isZeroPadded()));
+                                break;
+                            case segment_type_3.MonthSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getMonthFormat(segmentType.isZeroPadded()));
+                                break;
+                            case segment_type_3.YearSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getYearFormat(segmentType.isZeroPadded(), segmentType.isTwoDigit()));
+                                break;
+                            case segment_type_3.YearMonthDaySegmentType:
+                                format.push(this.getYearMonthDayFormat());
+                                break;
+                            case segment_type_3.YearMonthDayHourMinuteSegmentType:
+                                format.push(this.getYearMonthDayHourMinuteFormat());
+                                break;
+                            case segment_type_3.YearMonthDayHourMinuteSecondSegmentType:
+                                format.push(this.getYearMonthDayHourMinuteSecondFormat());
+                                break;
+                            case segment_type_3.HourMinuteSegmentType:
+                                format.push(this.getHourMinuteFormat());
+                                break;
+                            case segment_type_3.HourMinuteSecondSegmentType:
+                                format.push(this.getHourMinuteSecondFormat());
+                                break;
+                            case segment_type_3.HourSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getHourFormat(segmentType.getTwentyFour(), segmentType.isZeroPadded()));
+                                break;
+                            case segment_type_3.MinuteSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getMinuteFormat(segmentType.isZeroPadded()));
+                                break;
+                            case segment_type_3.SecondSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getSecondFormat(segmentType.isZeroPadded()));
+                                break;
+                            case segment_type_3.SecondFractionSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getSecondFractionFormat(segmentType.getPrecision()));
+                                break;
+                            case segment_type_3.AMPMSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getAMPMFormat(segmentType.getCaseStyle(), segmentType.isAbbreviated(), segmentType.isPeriods()));
+                                break;
+                            case segment_type_3.TimezoneSegmentType:
+                                segmentType = segment.getSelected();
+                                switch (segmentType.getTimezoneType()) {
+                                    case segment_type_3.TimezoneType.Hour:
+                                        format.push(this.getTimezoneHourFormat());
+                                        break;
+                                    case segment_type_3.TimezoneType.HourMinute:
+                                        format.push(this.getTimezoneHourMinuteFormat());
+                                        break;
+                                    case segment_type_3.TimezoneType.HourMinuteSeparated:
+                                        format.push(this.getTimezoneHourMinuteSeparatedFormat());
+                                        break;
+                                    case segment_type_3.TimezoneType.Short:
+                                        format.push(this.getTimezoneHourMinuteSeparatedFormat());
+                                        break;
+                                    case segment_type_3.TimezoneType.HourMinuteSeparated:
+                                        format.push(this.getTimezoneHourMinuteSeparatedFormat());
+                                        break;
+                                    default:
+                                        throw new UnhandledSegmentTypeError(segmentType);
+                                }
+                                break;
+                            case segment_type_3.EpochSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getEpochFormat(segmentType.getMilliseconds()));
+                                break;
+                            case segment_type_3.FillSegmentType:
+                                segmentType = segment.getSelected();
+                                format.push(this.getFillFormat(segmentType.getToken()));
+                                break;
+                            default:
+                                throw new UnhandledSegmentTypeError(segment.getSelectedType());
+                        }
+                    }
+                    return format;
+                };
+                DateFormat.prototype.getFormatString = function () {
+                    var segments = this.getSegments();
+                    var formatString = "";
+                    for (var i = 0; i < segments.length; i++) {
+                        formatString += segments[i].getValue();
+                    }
+                    return formatString;
+                };
                 return DateFormat;
             }());
             exports_15("DateFormat", DateFormat);
@@ -2030,7 +2138,7 @@ System.register("app/dateformats/dateformat", [], function(exports_15, context_1
 System.register("app/dateformats/coreutils", ["app/dateformats/dateformat", "app/dateformats/dateformat-segment", "app/segment-type"], function(exports_16, context_16) {
     "use strict";
     var __moduleName = context_16 && context_16.id;
-    var dateformat_1, dateformat_segment_1, segment_type_3;
+    var dateformat_1, dateformat_segment_1, segment_type_4;
     var CoreutilsDateFormat;
     return {
         setters:[
@@ -2040,8 +2148,8 @@ System.register("app/dateformats/coreutils", ["app/dateformats/dateformat", "app
             function (dateformat_segment_1_1) {
                 dateformat_segment_1 = dateformat_segment_1_1;
             },
-            function (segment_type_3_1) {
-                segment_type_3 = segment_type_3_1;
+            function (segment_type_4_1) {
+                segment_type_4 = segment_type_4_1;
             }],
         execute: function() {
             CoreutilsDateFormat = (function (_super) {
@@ -2049,219 +2157,172 @@ System.register("app/dateformats/coreutils", ["app/dateformats/dateformat", "app
                 function CoreutilsDateFormat() {
                     _super.apply(this, arguments);
                 }
-                CoreutilsDateFormat.prototype.getLabel = function () {
-                    return "Coreutils Date";
+                CoreutilsDateFormat.prototype.getDayOfWeekFormat = function (caseStyle, abbreviated) {
+                    if (abbreviated) {
+                        return this.getCasedSegmentType(caseStyle, "a", "");
+                    }
+                    else {
+                        return this.getCasedSegmentType(caseStyle, "A", "");
+                    }
                 };
-                CoreutilsDateFormat.prototype.getFormat = function () {
-                    var format = [];
-                    var segments = this.datetime.getSegments();
-                    var segmentType;
-                    for (var i = 0; i < segments.length; i++) {
-                        var segment = segments[i];
-                        switch (segment.getSelected()) {
-                            case segment_type_3.ShortDaySegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(this.getCasedSegmentType(segmentType, "a", ""));
-                                break;
-                            case segment_type_3.LongDaySegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(this.getCasedSegmentType(segmentType, "A", ""));
-                                break;
-                            case segment_type_3.ShortMonthSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(this.getCasedSegmentType(segmentType, "b", ""));
-                                break;
-                            case segment_type_3.LongMonthSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(this.getCasedSegmentType(segmentType, "B", ""));
-                                break;
-                            case segment_type_3.DaySegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                var tooltip = null;
-                                var stat = dateformat_segment_1.DateFormatSegmentStatus.OKAY;
-                                if (segmentType.isPrettyEnding()) {
-                                    tooltip = "Coreutils Bash does not support st, nd, rd, th.";
-                                    stat = dateformat_segment_1.DateFormatSegmentStatus.ERROR;
-                                }
-                                if (segmentType.isZeroPadded()) {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%d", stat, tooltip));
-                                }
-                                else {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%-d", stat, tooltip));
-                                }
-                                break;
-                            case segment_type_3.MonthSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                if (segmentType.isZeroPadded()) {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%m", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                else {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%-m", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                break;
-                            case segment_type_3.YearSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                if (segmentType.isZeroPadded()) {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%Y", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                else {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%-Y", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                break;
-                            case segment_type_3.YearMonthDaySegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%Y%m%d", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.YearMonthDayHourMinuteSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%Y%m%d%H%M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.YearMonthDayHourMinuteSecondSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%Y%m%d%H%M%S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.ShortYearSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                if (segmentType.isZeroPadded()) {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%y", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                else {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%-y", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                break;
-                            case segment_type_3.HourMinuteSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%H%M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.HourMinuteSecondSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%H%M%S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.HourSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                if (segmentType.getTwentyFour()) {
-                                    if (segmentType.isZeroPadded()) {
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%H", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                    }
-                                    else {
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%-H", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                    }
-                                }
-                                else {
-                                    if (segmentType.isZeroPadded()) {
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%I", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                    }
-                                    else {
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%-I", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                    }
-                                }
-                                break;
-                            case segment_type_3.MinuteSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                if (segmentType.isZeroPadded()) {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                else {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%-M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                break;
-                            case segment_type_3.SecondSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                if (segmentType.isZeroPadded()) {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                else {
-                                    format.push(new dateformat_segment_1.DateFormatSegment("%-S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                }
-                                break;
-                            case segment_type_3.MillisecondSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%N", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.AMPMSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                switch (segmentType.getCaseStyle()) {
-                                    case segment_type_3.CaseStyle.Upper:
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%p", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                        break;
-                                    default:
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%P", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                        break;
-                                }
-                                break;
-                            case segment_type_3.ShortTimezoneSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%Z", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.LongTimezoneSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment(segmentType.getSettings().get('token').getValue().replace('%', '%%'), dateformat_segment_1.DateFormatSegmentStatus.ERROR, "Coreutils Date does not support Long Timezones"));
-                                break;
-                            case segment_type_3.TimezoneOffsetSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                switch (segmentType.getTimezoneOffsetType()) {
-                                    case segment_type_3.TimezoneOffsetType.Hour:
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%:::z", dateformat_segment_1.DateFormatSegmentStatus.WARN, "This mode specifies to necessary precision. Coreutils Date does not have a way of forcing only hour."));
-                                        break;
-                                    case segment_type_3.TimezoneOffsetType.HourMinute:
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%z", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                        break;
-                                    case segment_type_3.TimezoneOffsetType.HourMinuteSecond:
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%::z", dateformat_segment_1.DateFormatSegmentStatus.ERROR, "There is no way to specify hour-minute-second without separators in bash"));
-                                        break;
-                                    case segment_type_3.TimezoneOffsetType.HourMinuteSeparated:
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%:z", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                        break;
-                                    case segment_type_3.TimezoneOffsetType.HourMinuteSecondSeparated:
-                                        format.push(new dateformat_segment_1.DateFormatSegment("%::z", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                        break;
-                                }
-                                break;
-                            case segment_type_3.EpochSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment("%s", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            case segment_type_3.FillSegmentType:
-                                segmentType = segment.getType(segment.getSelected());
-                                format.push(new dateformat_segment_1.DateFormatSegment(segmentType.getSettings().get('token').getValue().replace('%', '%%'), dateformat_segment_1.DateFormatSegmentStatus.OKAY, null));
-                                break;
-                            default:
-                                throw new Error("Unhandled SegmentType (" + segment.getSelected().name + ") Encountered for type: " + this.getLabel());
+                CoreutilsDateFormat.prototype.getTextMonthFormat = function (caseStyle, abbreviated) {
+                    if (abbreviated) {
+                        return this.getCasedSegmentType(caseStyle, "b", "");
+                    }
+                    else {
+                        return this.getCasedSegmentType(caseStyle, "B", "");
+                    }
+                };
+                CoreutilsDateFormat.prototype.getDayFormat = function (caseStyle, prettyEnding, zeroPadded) {
+                    var tooltip = null;
+                    var stat = dateformat_segment_1.DateFormatSegmentStatus.OKAY;
+                    if (prettyEnding) {
+                        tooltip = CoreutilsDateFormat.label + " does not support st, nd, rd, th.";
+                        stat = dateformat_segment_1.DateFormatSegmentStatus.WARN;
+                    }
+                    if (zeroPadded) {
+                        return new dateformat_segment_1.DateFormatSegment("%d", stat, tooltip);
+                    }
+                    else {
+                        return new dateformat_segment_1.DateFormatSegment("%-d", stat, tooltip);
+                    }
+                };
+                CoreutilsDateFormat.prototype.getMonthFormat = function (zeroPadded) {
+                    if (zeroPadded) {
+                        return new dateformat_segment_1.DateFormatSegment("%m", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                    }
+                    else {
+                        return new dateformat_segment_1.DateFormatSegment("%-m", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                    }
+                };
+                CoreutilsDateFormat.prototype.getYearFormat = function (zeroPadded, twoDigit) {
+                    var format = "%";
+                    if (!zeroPadded) {
+                        format += "-";
+                    }
+                    if (twoDigit) {
+                        format += "y";
+                    }
+                    else {
+                        format += "Y";
+                    }
+                    return new dateformat_segment_1.DateFormatSegment(format, dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getYearMonthDayFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%Y%m%d", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getYearMonthDayHourMinuteFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%Y%m%d%H%M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getYearMonthDayHourMinuteSecondFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%Y%m%d%H%M%S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getHourMinuteFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%H%M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getHourMinuteSecondFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%H%M%S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getHourFormat = function (twentyFourHour, zeroPadded) {
+                    if (twentyFourHour) {
+                        if (zeroPadded) {
+                            return new dateformat_segment_1.DateFormatSegment("%H", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                        }
+                        else {
+                            return new dateformat_segment_1.DateFormatSegment("%-H", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
                         }
                     }
-                    return format;
-                };
-                CoreutilsDateFormat.prototype.getFormatString = function () {
-                    var format = this.getFormat();
-                    var formatString = "";
-                    for (var i in format) {
-                        formatString += format[i].getValue();
+                    else {
+                        if (zeroPadded) {
+                            return new dateformat_segment_1.DateFormatSegment("%I", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                        }
+                        else {
+                            return new dateformat_segment_1.DateFormatSegment("%-I", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                        }
                     }
-                    return formatString;
+                };
+                CoreutilsDateFormat.prototype.getMinuteFormat = function (zeroPadded) {
+                    if (zeroPadded) {
+                        return new dateformat_segment_1.DateFormatSegment("%M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                    }
+                    else {
+                        return new dateformat_segment_1.DateFormatSegment("%-M", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                    }
+                };
+                CoreutilsDateFormat.prototype.getSecondFormat = function (zeroPadded) {
+                    if (zeroPadded) {
+                        return new dateformat_segment_1.DateFormatSegment("%S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                    }
+                    else {
+                        return new dateformat_segment_1.DateFormatSegment("%-S", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                    }
+                };
+                CoreutilsDateFormat.prototype.getSecondFractionFormat = function (secondFractionType) {
+                    switch (secondFractionType) {
+                        case segment_type_4.SecondFractionType.Milliseconds:
+                        case segment_type_4.SecondFractionType.Microseconds:
+                            return new dateformat_segment_1.DateFormatSegment("%N", dateformat_segment_1.DateFormatSegmentStatus.WARN, CoreutilsDateFormat.label + " can only display nanoseconds.");
+                        case segment_type_4.SecondFractionType.Nanoseconds:
+                            return new dateformat_segment_1.DateFormatSegment("%N", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                    }
+                };
+                CoreutilsDateFormat.prototype.getAMPMFormat = function (caseStyle, abbreviated, periods) {
+                    if (abbreviated) {
+                        return new dateformat_segment_1.DateFormatSegment("%p", dateformat_segment_1.DateFormatSegmentStatus.WARN, "Bash cannot output abbreviated ampm");
+                    }
+                    if (periods) {
+                        return new dateformat_segment_1.DateFormatSegment("%p", dateformat_segment_1.DateFormatSegmentStatus.WARN, "Bash cannot output am/pm with periods.");
+                    }
+                    switch (caseStyle) {
+                        case segment_type_4.CaseStyle.Upper:
+                            return new dateformat_segment_1.DateFormatSegment("%p", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                        case segment_type_4.CaseStyle.Lower:
+                            return new dateformat_segment_1.DateFormatSegment("%P", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                        case segment_type_4.CaseStyle.Title:
+                            return new dateformat_segment_1.DateFormatSegment("%P", dateformat_segment_1.DateFormatSegmentStatus.WARN, "There is no title case for AMPM");
+                    }
+                };
+                CoreutilsDateFormat.prototype.getTimezoneHourFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%:::z", dateformat_segment_1.DateFormatSegmentStatus.WARN, "This mode specifies to necessary precision. Coreutils Date does not have a way of forcing only hour.");
+                };
+                CoreutilsDateFormat.prototype.getTimezoneHourMinuteFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%z", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getTimezoneHourMinuteSeparatedFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%:z", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getTimezoneShortFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("%Z", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getTimezoneLongFormat = function () {
+                    return new dateformat_segment_1.DateFormatSegment("Error", dateformat_segment_1.DateFormatSegmentStatus.ERROR, "Coreutils Date does not support Long Timezones");
+                };
+                CoreutilsDateFormat.prototype.getEpochFormat = function (milliseconds) {
+                    return new dateformat_segment_1.DateFormatSegment("%s", dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
+                };
+                CoreutilsDateFormat.prototype.getFillFormat = function (token) {
+                    return new dateformat_segment_1.DateFormatSegment(token.replace('%', '%%'), dateformat_segment_1.DateFormatSegmentStatus.OKAY, null);
                 };
                 CoreutilsDateFormat.prototype.getParseExample = function () {
-                    return "date '+" + this.getFormatString() + "' --date='" + this.datetime.toString() + "'";
+                    return CoreutilsDateFormat.label + " does not have formatted date parsing. This may still work however:\n"
+                        + "date '+" + this.getFormatString() + "' --date='" + this.datetime.toString() + "'";
                 };
                 CoreutilsDateFormat.prototype.getPrintExample = function () {
                     return "date '+" + this.getFormatString() + "'";
                 };
-                CoreutilsDateFormat.prototype.getCasedSegmentType = function (segmentType, formatString, extraFormatters) {
+                CoreutilsDateFormat.prototype.getCasedSegmentType = function (caseStyle, formatString, extraFormatters) {
                     var format = "%" + extraFormatters;
                     var stat = dateformat_segment_1.DateFormatSegmentStatus.OKAY;
                     var tooltip = null;
-                    switch (segmentType.getCaseStyle()) {
-                        case segment_type_3.CaseStyle.Upper:
+                    switch (caseStyle) {
+                        case segment_type_4.CaseStyle.Upper:
                             format += "^";
                             break;
-                        case segment_type_3.CaseStyle.Lower:
-                            stat = dateformat_segment_1.DateFormatSegmentStatus.ERROR;
+                        case segment_type_4.CaseStyle.Lower:
+                            stat = dateformat_segment_1.DateFormatSegmentStatus.WARN;
                             tooltip = "Coreutils Date does not have an option for lowercase.";
                             break;
-                        case segment_type_3.CaseStyle.Unknown:
-                            stat = dateformat_segment_1.DateFormatSegmentStatus.ERROR;
-                            tooltip = "An unknown CaseStyle was specified.";
-                            break;
-                        case segment_type_3.CaseStyle.Title:
+                        case segment_type_4.CaseStyle.Title:
                             break;
                         default:
                             break;
@@ -2269,34 +2330,460 @@ System.register("app/dateformats/coreutils", ["app/dateformats/dateformat", "app
                     format += formatString + extraFormatters;
                     return new dateformat_segment_1.DateFormatSegment(format, stat, tooltip);
                 };
+                CoreutilsDateFormat.label = "Coreutils Date";
                 return CoreutilsDateFormat;
             }(dateformat_1.DateFormat));
             exports_16("CoreutilsDateFormat", CoreutilsDateFormat);
         }
     }
 });
-System.register("app/dateformat.component", ['angular2/core', "app/segment-type", "app/dateformats/coreutils"], function(exports_17, context_17) {
+System.register("app/dateformats/javasdf", ["app/dateformats/dateformat", "app/dateformats/dateformat-segment", "app/segment-type"], function(exports_17, context_17) {
     "use strict";
     var __moduleName = context_17 && context_17.id;
-    var core_7, segment_type_4, coreutils_1;
+    var dateformat_2, dateformat_segment_2, segment_type_5;
+    var JavaSDFDateFormat;
+    return {
+        setters:[
+            function (dateformat_2_1) {
+                dateformat_2 = dateformat_2_1;
+            },
+            function (dateformat_segment_2_1) {
+                dateformat_segment_2 = dateformat_segment_2_1;
+            },
+            function (segment_type_5_1) {
+                segment_type_5 = segment_type_5_1;
+            }],
+        execute: function() {
+            JavaSDFDateFormat = (function (_super) {
+                __extends(JavaSDFDateFormat, _super);
+                function JavaSDFDateFormat() {
+                    _super.apply(this, arguments);
+                }
+                JavaSDFDateFormat.prototype.getDayOfWeekFormat = function (caseStyle, abbreviated) {
+                    if (abbreviated) {
+                        return this.getCasedSegmentType(caseStyle, "EEE");
+                    }
+                    else {
+                        return this.getCasedSegmentType(caseStyle, "EEEE");
+                    }
+                };
+                JavaSDFDateFormat.prototype.getTextMonthFormat = function (caseStyle, abbreviated) {
+                    if (abbreviated) {
+                        return this.getCasedSegmentType(caseStyle, "MMM");
+                    }
+                    else {
+                        return this.getCasedSegmentType(caseStyle, "MMMM");
+                    }
+                };
+                JavaSDFDateFormat.prototype.getDayFormat = function (caseStyle, prettyEnding, zeroPadded) {
+                    var tooltip = null;
+                    var stat = dateformat_segment_2.DateFormatSegmentStatus.OKAY;
+                    if (prettyEnding) {
+                        tooltip = "Java SimpleDateFormat does not support st, nd, rd, th natively.";
+                        stat = dateformat_segment_2.DateFormatSegmentStatus.WARN;
+                    }
+                    if (zeroPadded) {
+                        return new dateformat_segment_2.DateFormatSegment("dd", stat, tooltip);
+                    }
+                    else {
+                        return new dateformat_segment_2.DateFormatSegment("d", stat, tooltip);
+                    }
+                };
+                JavaSDFDateFormat.prototype.getMonthFormat = function (zeroPadded) {
+                    if (zeroPadded) {
+                        return new dateformat_segment_2.DateFormatSegment("MM", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                    }
+                    else {
+                        return new dateformat_segment_2.DateFormatSegment("M", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                    }
+                };
+                JavaSDFDateFormat.prototype.getYearFormat = function (zeroPadded, twoDigit) {
+                    var format = "";
+                    var stat = dateformat_segment_2.DateFormatSegmentStatus.OKAY;
+                    var tooltip = null;
+                    if (zeroPadded) {
+                        format += "y";
+                    }
+                    if (twoDigit) {
+                        if (!zeroPadded) {
+                            stat = dateformat_segment_2.DateFormatSegmentStatus.WARN;
+                            tooltip = JavaSDFDateFormat.label + " does not support 2-digit non-zero-padded years.";
+                        }
+                        format = "yy";
+                    }
+                    else {
+                        format += "yyy";
+                    }
+                    return new dateformat_segment_2.DateFormatSegment(format, stat, tooltip);
+                };
+                JavaSDFDateFormat.prototype.getYearMonthDayFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("yyyyMMdd", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getYearMonthDayHourMinuteFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("yyyyMMddHHmm", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getYearMonthDayHourMinuteSecondFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("yyyyMMddHHmmss", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getHourMinuteFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("HHmm", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getHourMinuteSecondFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("HHmmss", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getHourFormat = function (twentyFourHour, zeroPadded) {
+                    if (twentyFourHour) {
+                        if (zeroPadded) {
+                            return new dateformat_segment_2.DateFormatSegment("HH", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                        }
+                        else {
+                            return new dateformat_segment_2.DateFormatSegment("H", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                        }
+                    }
+                    else {
+                        if (zeroPadded) {
+                            return new dateformat_segment_2.DateFormatSegment("hh", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                        }
+                        else {
+                            return new dateformat_segment_2.DateFormatSegment("h", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                        }
+                    }
+                };
+                JavaSDFDateFormat.prototype.getMinuteFormat = function (zeroPadded) {
+                    if (zeroPadded) {
+                        return new dateformat_segment_2.DateFormatSegment("mm", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                    }
+                    else {
+                        return new dateformat_segment_2.DateFormatSegment("m", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                    }
+                };
+                JavaSDFDateFormat.prototype.getSecondFormat = function (zeroPadded) {
+                    if (zeroPadded) {
+                        return new dateformat_segment_2.DateFormatSegment("ss", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                    }
+                    else {
+                        return new dateformat_segment_2.DateFormatSegment("s", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                    }
+                };
+                JavaSDFDateFormat.prototype.getSecondFractionFormat = function (secondFractionType) {
+                    if (secondFractionType !== segment_type_5.SecondFractionType.Milliseconds) {
+                        return new dateformat_segment_2.DateFormatSegment("Error", dateformat_segment_2.DateFormatSegmentStatus.ERROR, JavaSDFDateFormat.label + " can only parse milliseconds.");
+                    }
+                    return new dateformat_segment_2.DateFormatSegment("SSS", dateformat_segment_2.DateFormatSegmentStatus.WARN, "Milliseconds must always be 3 digits, otherwise it will not parse correctly. To parse 1 or two digits, use that many S's");
+                };
+                JavaSDFDateFormat.prototype.getAMPMFormat = function (caseStyle, abbreviated, periods) {
+                    if (abbreviated) {
+                        return new dateformat_segment_2.DateFormatSegment("a", dateformat_segment_2.DateFormatSegmentStatus.WARN, "Java cannot output abbreviated ampm");
+                    }
+                    if (periods) {
+                        return new dateformat_segment_2.DateFormatSegment("a", dateformat_segment_2.DateFormatSegmentStatus.WARN, "Java cannot output am/pm with periods.");
+                    }
+                    switch (caseStyle) {
+                        case segment_type_5.CaseStyle.Upper:
+                            return new dateformat_segment_2.DateFormatSegment("a", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                        case segment_type_5.CaseStyle.Lower:
+                            return new dateformat_segment_2.DateFormatSegment("a", dateformat_segment_2.DateFormatSegmentStatus.WARN, "Java only outputs Uppercase AMPM");
+                        case segment_type_5.CaseStyle.Title:
+                            return new dateformat_segment_2.DateFormatSegment("a", dateformat_segment_2.DateFormatSegmentStatus.WARN, "Java only outputs Uppercase AMPM");
+                    }
+                };
+                JavaSDFDateFormat.prototype.getTimezoneHourFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("X", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getTimezoneHourMinuteFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("XX", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getTimezoneHourMinuteSeparatedFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("XXX", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getTimezoneShortFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("zzz", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getTimezoneLongFormat = function () {
+                    return new dateformat_segment_2.DateFormatSegment("zzzz", dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getEpochFormat = function (milliseconds) {
+                    return new dateformat_segment_2.DateFormatSegment("Error", dateformat_segment_2.DateFormatSegmentStatus.ERROR, "Java SimpleDateFormat cannot parse directly from epoch.");
+                };
+                JavaSDFDateFormat.prototype.getFillFormat = function (token) {
+                    var containsAlphaRegex = /.*[a-zA-Z].*/;
+                    var str = token.replace("'", "''");
+                    if (containsAlphaRegex.test(str)) {
+                        str = "'" + str + "'";
+                    }
+                    return new dateformat_segment_2.DateFormatSegment(str, dateformat_segment_2.DateFormatSegmentStatus.OKAY, null);
+                };
+                JavaSDFDateFormat.prototype.getParseExample = function () {
+                    return "import java.text.SimpleDateFormat;\n" +
+                        "import java.util.Date;\n\n" +
+                        "SimpleDateFormat myDateFormat = new SimpleDateFormat(\"" + this.getFormatString() + "\");\n" +
+                        "Date myParsedDate = myDateFormat.parse(\"" + this.datetime.toString() + "\");";
+                };
+                JavaSDFDateFormat.prototype.getPrintExample = function () {
+                    return "import java.text.SimpleDateFormat;\n" +
+                        "import java.util.Date;\n\n" +
+                        "SimpleDateFormat myDateFormat = new SimpleDateFormat(\"" + this.getFormatString() + "\");\n" +
+                        "Date myParsedDate = new Date();\n" +
+                        "System.out.println(myDateFormat.format(myParsedDate));";
+                };
+                JavaSDFDateFormat.prototype.getCasedSegmentType = function (caseStyle, formatString) {
+                    var stat = dateformat_segment_2.DateFormatSegmentStatus.OKAY;
+                    var tooltip = null;
+                    if (caseStyle !== segment_type_5.CaseStyle.Title) {
+                        stat = dateformat_segment_2.DateFormatSegmentStatus.WARN;
+                        tooltip = "Java SimpleDateFormat only directly supports title format. Upper/Lowercasing should be done via functions afterwards.";
+                    }
+                    return new dateformat_segment_2.DateFormatSegment(formatString, stat, tooltip);
+                };
+                JavaSDFDateFormat.label = "Java SimpleDateFormat";
+                return JavaSDFDateFormat;
+            }(dateformat_2.DateFormat));
+            exports_17("JavaSDFDateFormat", JavaSDFDateFormat);
+        }
+    }
+});
+System.register("app/dateformats/postgres", ["app/dateformats/dateformat", "app/dateformats/dateformat-segment", "app/segment-type"], function(exports_18, context_18) {
+    "use strict";
+    var __moduleName = context_18 && context_18.id;
+    var dateformat_3, dateformat_segment_3, segment_type_6;
+    var PostgresDateformat;
+    return {
+        setters:[
+            function (dateformat_3_1) {
+                dateformat_3 = dateformat_3_1;
+            },
+            function (dateformat_segment_3_1) {
+                dateformat_segment_3 = dateformat_segment_3_1;
+            },
+            function (segment_type_6_1) {
+                segment_type_6 = segment_type_6_1;
+            }],
+        execute: function() {
+            PostgresDateformat = (function (_super) {
+                __extends(PostgresDateformat, _super);
+                function PostgresDateformat() {
+                    _super.apply(this, arguments);
+                }
+                PostgresDateformat.prototype.getDayOfWeekFormat = function (caseStyle, abbreviated) {
+                    if (abbreviated) {
+                        return this.getCasedSegmentType(caseStyle, "dy");
+                    }
+                    else {
+                        return this.getCasedSegmentType(caseStyle, "day");
+                    }
+                };
+                PostgresDateformat.prototype.getTextMonthFormat = function (caseStyle, abbreviated) {
+                    if (abbreviated) {
+                        return this.getCasedSegmentType(caseStyle, "mon");
+                    }
+                    else {
+                        return this.getCasedSegmentType(caseStyle, "month");
+                    }
+                };
+                PostgresDateformat.prototype.getDayFormat = function (caseStyle, prettyEnding, zeroPadded) {
+                    var format = "DD";
+                    var stat = dateformat_segment_3.DateFormatSegmentStatus.OKAY;
+                    var tooltip = null;
+                    if (!zeroPadded) {
+                        format += "FM";
+                    }
+                    if (prettyEnding) {
+                        switch (caseStyle) {
+                            case segment_type_6.CaseStyle.Upper:
+                                format += "TH";
+                                break;
+                            case segment_type_6.CaseStyle.Lower:
+                                format += "th";
+                                break;
+                            case segment_type_6.CaseStyle.Title:
+                                format += "th";
+                                stat = dateformat_segment_3.DateFormatSegmentStatus.WARN;
+                                tooltip = PostgresDateformat.label + " can only do uppercase or lowercase pretty endings. Using lowercase by default";
+                                break;
+                        }
+                    }
+                    return new dateformat_segment_3.DateFormatSegment(format, stat, tooltip);
+                };
+                PostgresDateformat.prototype.getMonthFormat = function (zeroPadded) {
+                    return this.getZeroPadded(zeroPadded, "MM");
+                };
+                PostgresDateformat.prototype.getYearFormat = function (zeroPadded, twoDigit) {
+                    if (twoDigit) {
+                        return this.getZeroPadded(zeroPadded, "YY");
+                    }
+                    else {
+                        return this.getZeroPadded(zeroPadded, "YYYY");
+                    }
+                };
+                PostgresDateformat.prototype.getYearMonthDayFormat = function () {
+                    var format = "";
+                    format += this.getYearFormat(false, false).getValue();
+                    format += this.getMonthFormat(false).getValue();
+                    format += this.getDayFormat(segment_type_6.CaseStyle.Lower, false, false).getValue();
+                    return new dateformat_segment_3.DateFormatSegment(format, dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                };
+                PostgresDateformat.prototype.getYearMonthDayHourMinuteFormat = function () {
+                    var format = "";
+                    format += this.getYearFormat(false, false).getValue();
+                    format += this.getMonthFormat(false).getValue();
+                    format += this.getDayFormat(segment_type_6.CaseStyle.Lower, false, false).getValue();
+                    format += this.getHourFormat(true, false).getValue();
+                    format += this.getMinuteFormat(false).getValue();
+                    return new dateformat_segment_3.DateFormatSegment(format, dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                };
+                PostgresDateformat.prototype.getYearMonthDayHourMinuteSecondFormat = function () {
+                    var format = "";
+                    format += this.getYearFormat(false, false).getValue();
+                    format += this.getMonthFormat(false).getValue();
+                    format += this.getDayFormat(segment_type_6.CaseStyle.Lower, false, false).getValue();
+                    format += this.getHourFormat(true, false).getValue();
+                    format += this.getMinuteFormat(false).getValue();
+                    format += this.getSecondFormat(false).getValue();
+                    return new dateformat_segment_3.DateFormatSegment(format, dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                };
+                PostgresDateformat.prototype.getHourMinuteFormat = function () {
+                    var format = "";
+                    format += this.getHourFormat(true, false).getValue();
+                    format += this.getMinuteFormat(false).getValue();
+                    return new dateformat_segment_3.DateFormatSegment(format, dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                };
+                PostgresDateformat.prototype.getHourMinuteSecondFormat = function () {
+                    var format = "";
+                    format += this.getHourFormat(true, false).getValue();
+                    format += this.getMinuteFormat(false).getValue();
+                    format += this.getSecondFormat(false).getValue();
+                    return new dateformat_segment_3.DateFormatSegment(format, dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                };
+                PostgresDateformat.prototype.getHourFormat = function (twentyFourHour, zeroPadded) {
+                    if (twentyFourHour) {
+                        return this.getZeroPadded(zeroPadded, "HH24");
+                    }
+                    else {
+                        return this.getZeroPadded(zeroPadded, "HH");
+                    }
+                };
+                PostgresDateformat.prototype.getMinuteFormat = function (zeroPadded) {
+                    return this.getZeroPadded(zeroPadded, "MI");
+                };
+                PostgresDateformat.prototype.getSecondFormat = function (zeroPadded) {
+                    return this.getZeroPadded(zeroPadded, "SS");
+                };
+                PostgresDateformat.prototype.getSecondFractionFormat = function (secondFractionType) {
+                    switch (secondFractionType) {
+                        case segment_type_6.SecondFractionType.Milliseconds:
+                            return new dateformat_segment_3.DateFormatSegment("MS", dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                        case segment_type_6.SecondFractionType.Microseconds:
+                            return new dateformat_segment_3.DateFormatSegment("US", dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                        case segment_type_6.SecondFractionType.Nanoseconds:
+                            return new dateformat_segment_3.DateFormatSegment("Error", dateformat_segment_3.DateFormatSegmentStatus.ERROR, PostgresDateformat.label + " cannot handle nanoseconds.");
+                    }
+                };
+                PostgresDateformat.prototype.getAMPMFormat = function (caseStyle, abbreviated, periods) {
+                    switch (caseStyle) {
+                        case segment_type_6.CaseStyle.Upper:
+                            return new dateformat_segment_3.DateFormatSegment("AM", dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                        case segment_type_6.CaseStyle.Lower:
+                            return new dateformat_segment_3.DateFormatSegment("am", dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                        case segment_type_6.CaseStyle.Title:
+                            return new dateformat_segment_3.DateFormatSegment("AM", dateformat_segment_3.DateFormatSegmentStatus.WARN, "There is no title case for AMPM");
+                    }
+                };
+                PostgresDateformat.prototype.getTimezoneHourFormat = function () {
+                    return new dateformat_segment_3.DateFormatSegment("Error", dateformat_segment_3.DateFormatSegmentStatus.ERROR, "In Postgres, timestamps must be specified by the `WITH TIMESTAMP` option on to_timestamp");
+                };
+                PostgresDateformat.prototype.getTimezoneHourMinuteFormat = function () {
+                    return new dateformat_segment_3.DateFormatSegment("Error", dateformat_segment_3.DateFormatSegmentStatus.ERROR, "In Postgres, timestamps must be specified by the `WITH TIMESTAMP` option on to_timestamp");
+                };
+                PostgresDateformat.prototype.getTimezoneHourMinuteSeparatedFormat = function () {
+                    return new dateformat_segment_3.DateFormatSegment("Error", dateformat_segment_3.DateFormatSegmentStatus.ERROR, "In Postgres, timestamps must be specified by the `WITH TIMESTAMP` option on to_timestamp");
+                };
+                PostgresDateformat.prototype.getTimezoneShortFormat = function () {
+                    return new dateformat_segment_3.DateFormatSegment("TZ", dateformat_segment_3.DateFormatSegmentStatus.WARN, null);
+                };
+                PostgresDateformat.prototype.getTimezoneLongFormat = function () {
+                    return new dateformat_segment_3.DateFormatSegment("TZ", dateformat_segment_3.DateFormatSegmentStatus.WARN, null);
+                };
+                PostgresDateformat.prototype.getEpochFormat = function (milliseconds) {
+                    return new dateformat_segment_3.DateFormatSegment("Error", dateformat_segment_3.DateFormatSegmentStatus.ERROR, "Java SimpleDateFormat cannot parse directly from epoch.\n" +
+                        "Parse epoch directly using to_timestamp(your_number).");
+                };
+                PostgresDateformat.prototype.getFillFormat = function (token) {
+                    var containsAlphaRegex = /.*[a-zA-Z].*/;
+                    var str = token.replace('"', '\\"');
+                    if (containsAlphaRegex.test(str)) {
+                        str = '"' + str + '"';
+                    }
+                    return new dateformat_segment_3.DateFormatSegment(str, dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                };
+                PostgresDateformat.prototype.getParseExample = function () {
+                    return "select to_timestamp('" + this.datetime.toString() + "', '" + this.getFormatString() + "');";
+                };
+                PostgresDateformat.prototype.getPrintExample = function () {
+                    return "select to_char(now(), '" + this.getFormatString() + "');";
+                };
+                PostgresDateformat.prototype.getCasedSegmentType = function (caseStyle, formatString) {
+                    var format = formatString;
+                    var stat = dateformat_segment_3.DateFormatSegmentStatus.OKAY;
+                    var tooltip = null;
+                    switch (caseStyle) {
+                        case segment_type_6.CaseStyle.Upper:
+                            format = format.toUpperCase();
+                            break;
+                        case segment_type_6.CaseStyle.Lower:
+                            format = format.toLowerCase();
+                            break;
+                        case segment_type_6.CaseStyle.Title:
+                            format = format[0].toUpperCase() + format.substring(1).toLowerCase();
+                            break;
+                        default:
+                            break;
+                    }
+                    return new dateformat_segment_3.DateFormatSegment("FM" + format, stat, tooltip);
+                };
+                PostgresDateformat.prototype.getZeroPadded = function (zeroPadded, formatString) {
+                    var format = "";
+                    if (!zeroPadded) {
+                        format += "FM";
+                    }
+                    format += formatString;
+                    return new dateformat_segment_3.DateFormatSegment(format, dateformat_segment_3.DateFormatSegmentStatus.OKAY, null);
+                };
+                PostgresDateformat.label = "Postgres Date";
+                return PostgresDateformat;
+            }(dateformat_3.DateFormat));
+            exports_18("PostgresDateformat", PostgresDateformat);
+        }
+    }
+});
+System.register("app/dateformat.component", ['angular2/core', "app/segment-type", "app/dateformats/coreutils", "app/dateformats/javasdf", "app/dateformats/postgres"], function(exports_19, context_19) {
+    "use strict";
+    var __moduleName = context_19 && context_19.id;
+    var core_7, segment_type_7, coreutils_1, javasdf_1, postgres_1;
     var DateFormatComponent;
     return {
         setters:[
             function (core_7_1) {
                 core_7 = core_7_1;
             },
-            function (segment_type_4_1) {
-                segment_type_4 = segment_type_4_1;
+            function (segment_type_7_1) {
+                segment_type_7 = segment_type_7_1;
             },
             function (coreutils_1_1) {
                 coreutils_1 = coreutils_1_1;
+            },
+            function (javasdf_1_1) {
+                javasdf_1 = javasdf_1_1;
+            },
+            function (postgres_1_1) {
+                postgres_1 = postgres_1_1;
             }],
         execute: function() {
             DateFormatComponent = (function () {
                 function DateFormatComponent() {
                     this.DATE_FORMATS = [
-                        coreutils_1.CoreutilsDateFormat,
+                        javasdf_1.JavaSDFDateFormat, coreutils_1.CoreutilsDateFormat, postgres_1.PostgresDateformat
                     ];
+                    this.selectedDateFormatIndex = 0;
                 }
                 DateFormatComponent.prototype.getWarnings = function (datetime) {
                     var warnings = [];
@@ -2304,53 +2791,49 @@ System.register("app/dateformat.component", ['angular2/core', "app/segment-type"
                     var segmentType;
                     var foundTypes = [];
                     var foundDuplicates = [];
-                    for (var i in segments) {
-                        segmentType = segments[i].getSelected();
+                    for (var i = 0; i < segments.length; i++) {
+                        segmentType = segments[i].getSelectedType();
                         if (segmentType === null) {
                             continue;
                         }
-                        if (foundTypes.indexOf(segmentType) > -1 && foundDuplicates.indexOf(segmentType) === -1 && segmentType !== segment_type_4.FillSegmentType) {
-                            warnings.push("Multiple segmentTypes of " + segmentType.name + " found.");
+                        if (foundTypes.indexOf(segmentType) > -1 && foundDuplicates.indexOf(segmentType) === -1 && segmentType !== segment_type_7.FillSegmentType) {
+                            warnings.push("Multiple segmentTypes of " + segmentType.label + " found.");
                             foundDuplicates.push(segmentType);
                         }
                         else {
                             foundTypes.push(segmentType);
                         }
                     }
-                    if ((foundTypes.indexOf(segment_type_4.MonthSegmentType) > -1 || foundTypes.indexOf(segment_type_4.LongMonthSegmentType) > -1 || foundTypes.indexOf(segment_type_4.ShortMonthSegmentType) > -1) && foundTypes.indexOf(segment_type_4.DaySegmentType) === -1) {
+                    if ((foundTypes.indexOf(segment_type_7.MonthSegmentType) > -1 || foundTypes.indexOf(segment_type_7.TextMonthSegmentType) > -1) && foundTypes.indexOf(segment_type_7.DaySegmentType) === -1) {
                         warnings.push("A month segment was found but no day segment was found");
                     }
-                    else if (foundTypes.indexOf(segment_type_4.DaySegmentType) > -1 && (foundTypes.indexOf(segment_type_4.MonthSegmentType) === -1 && foundTypes.indexOf(segment_type_4.LongMonthSegmentType) === -1 && foundTypes.indexOf(segment_type_4.ShortMonthSegmentType) === -1)) {
+                    else if (foundTypes.indexOf(segment_type_7.DaySegmentType) > -1 && (foundTypes.indexOf(segment_type_7.MonthSegmentType) === -1 && foundTypes.indexOf(segment_type_7.TextMonthSegmentType) === -1)) {
                         warnings.push("A day segment was found but no month segment was found");
                     }
                     return warnings;
                 };
-                DateFormatComponent.prototype.getDateFormats = function (datetime) {
-                    var dateFormats = [];
-                    for (var i in this.DATE_FORMATS) {
-                        var o = Object.create(this.DATE_FORMATS[i].prototype);
-                        o.constructor.apply(o, new Array(datetime));
-                        dateFormats.push(o);
-                    }
-                    return dateFormats;
+                DateFormatComponent.prototype.getDateFormat = function (datetime) {
+                    var o = Object.create(this.DATE_FORMATS[this.selectedDateFormatIndex].prototype);
+                    o.constructor.apply(o, new Array(datetime));
+                    return o;
                 };
                 DateFormatComponent = __decorate([
                     core_7.Component({
                         inputs: ['datetime'],
                         selector: 'dateformat',
-                        template: "\n      <template [ngIf]=\"datetime\">\n        <div *ngFor=\"#warning of getWarnings(datetime)\">\n          {{warning}}\n        </div>\n        <div *ngFor=\"#dateFormat of getDateFormats(datetime)\">\n          <div>\n            {{dateFormat.getLabel()}}:\n            <span *ngFor=\"#dateFormatSegment of dateFormat.getFormat()\" [class]=\"dateFormatSegment.getStatusClass()\" title=\"{{dateFormatSegment.tooltip}}\">{{dateFormatSegment.value}}</span>\n          </div>\n          <div>Print Example: {{dateFormat.getPrintExample()}}</div>\n          <div>Parse Example: {{dateFormat.getParseExample()}}</div>\n        </div>\n      </template>\n    ",
+                        template: "\n    <div class=\"dateformat\">\n      <template [ngIf]=\"datetime\">\n        <div class=\"format-selector\">\n          <label for=\"date-format-selector\">Date Format: </label>\n          <select id=\"date-format-selector\" [(ngModel)]=\"selectedDateFormatIndex\">\n            <option *ngFor=\"#dateFormat of DATE_FORMATS; #i = index\" [value]=\"i\">\n              {{dateFormat.label}}\n            </option>\n          </select>\n        </div>\n        <div class=\"date-format-warnings-title\" *ngIf=\"getWarnings(datetime).length > 0\">\n          Warnings:\n        </div>\n        <div class=\"date-format-warnings\" *ngFor=\"#warning of getWarnings(datetime)\">\n          {{warning}}\n        </div>\n        <div class=\"dateformat-examples\" *ngIf=\"selectedDateFormatIndex !== undefined\">\n          <div class=\"dateformat-name\">\n            {{DATE_FORMATS[selectedDateFormatIndex].label}}:\n            <span *ngFor=\"#dateFormatSegment of getDateFormat(datetime).getSegments()\" [class]=\"dateFormatSegment.getStatusClass()\" title=\"{{dateFormatSegment.tooltip}}\">{{dateFormatSegment.value}}</span>\n          </div>\n          <div class=\"dateformat-parse-example\">Parse Example:\n            <pre>{{getDateFormat(datetime).getParseExample()}}</pre>\n          </div>\n          <div class=\"dateformat-print-example\">Print Example:\n            <pre>{{getDateFormat(datetime).getPrintExample()}}</pre>\n          </div>\n        </div>\n      </template>\n    </div>\n    ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], DateFormatComponent);
                 return DateFormatComponent;
             }());
-            exports_17("DateFormatComponent", DateFormatComponent);
+            exports_19("DateFormatComponent", DateFormatComponent);
         }
     }
 });
-System.register("app/converter.component", ['angular2/core', "app/datetime", "app/datetime.component", "app/dateformat.component"], function(exports_18, context_18) {
+System.register("app/converter.component", ['angular2/core', "app/datetime", "app/datetime.component", "app/dateformat.component"], function(exports_20, context_20) {
     "use strict";
-    var __moduleName = context_18 && context_18.id;
+    var __moduleName = context_20 && context_20.id;
     var core_8, datetime_1, datetime_component_1, dateformat_component_1;
     var ConverterComponent;
     return {
@@ -2410,19 +2893,19 @@ System.register("app/converter.component", ['angular2/core', "app/datetime", "ap
                     core_8.Component({
                         directives: [datetime_component_1.DateTimeComponent, dateformat_component_1.DateFormatComponent],
                         selector: 'converter',
-                        template: "\n    <div>\n      <div>\n        <input [(ngModel)]=\"date\" className=\"date\" type=\"text\"/>\n        <button className=\"btn\" (click)=\"convert()\">Convert</button>\n        <button className=\"btn\" (click)=\"setRandom()\">Random</button>\n      </div>\n      <dateformat [datetime]=\"datetime\"></dateformat>\n      <datetime [datetime]=\"datetime\"></datetime>\n    </div>\n  ",
+                        template: "\n    <div class=\"converter\">\n      <div class=\"date-input\">\n        <input [(ngModel)]=\"date\" class=\"date\" type=\"text\"/>\n        <button class=\"btn\" (click)=\"convert()\">Convert</button>\n        <button class=\"btn\" (click)=\"setRandom()\">Random</button>\n      </div>\n      <dateformat [datetime]=\"datetime\"></dateformat>\n      <datetime [datetime]=\"datetime\"></datetime>\n    </div>\n  ",
                     }), 
                     __metadata('design:paramtypes', [])
                 ], ConverterComponent);
                 return ConverterComponent;
             }());
-            exports_18("ConverterComponent", ConverterComponent);
+            exports_20("ConverterComponent", ConverterComponent);
         }
     }
 });
-System.register("app/main", ['angular2/platform/browser', "app/converter.component"], function(exports_19, context_19) {
+System.register("app/main", ['angular2/platform/browser', "app/converter.component"], function(exports_21, context_21) {
     "use strict";
-    var __moduleName = context_19 && context_19.id;
+    var __moduleName = context_21 && context_21.id;
     var browser_1, converter_component_1;
     return {
         setters:[

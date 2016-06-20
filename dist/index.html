@@ -16,18 +16,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/2.0.0-beta.13/Rx.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/2.0.0-beta.13/angular2.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="app/main.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.structure.min.css" charset="utf-8">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.theme.min.css" charset="utf-8">
     
     <link rel="stylesheet" href="stylesheets/main.css" charset="utf-8">
   </head>
   <body>
+    <header>
+      <h1 class="title">Auto Date Format</h1>
+    </header>
     <converter>Loading...</converter>
+    <footer>Copyright &copy; 2016 <a href="https://glentaka.com">Glen Takahashi</a></footer>
     <!-- Edit Segment Modal -->
     <div class="modal fade" id="edit-segment-modal" tabindex="-1" role="dialog">
       <div class="modal-dialog">
@@ -61,7 +62,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary">Save segment</button>
+            <button type="button" class="btn btn-primary">Create segment</button>
           </div>
         </div>
       </div>
@@ -93,12 +94,12 @@
             <h4 class="modal-title">Split Segment</h4>
           </div>
           <div class="modal-body">
-            <ul class="characters">
+            <ul class="split-characters">
             </ul>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary">Save segment</button>
+            <button type="button" class="btn btn-primary">Split segment</button>
           </div>
         </div>
       </div>
@@ -109,15 +110,21 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">Join Segments</h4>
+            <h4 class="modal-title">Combine Segments</h4>
           </div>
           <div class="modal-body">
-            <ul class="segments"></ul>
-            <div class="slider"></div>
+            <div class="segments">
+              <span>Join </span>
+              <span class="segment1"></span>
+              <span> and </span>
+              <span class="segment2"></span>
+              <span> to </span>
+              <span class="segment-out"></span>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary">Join segments</button>
+            <button type="button" class="btn btn-primary">Combine segments</button>
           </div>
         </div>
       </div>
