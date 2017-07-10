@@ -19,3 +19,5 @@ dev
 # Should I remove these?
 *.map
 node_modules
+
+build

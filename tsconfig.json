@@ -1,21 +1,37 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "module": "system",
-    "moduleResolution": "node",
-    "sourceMap": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "removeComments": true,
-    "noImplicitAny": false,
-    "rootDir": "src"
-  },
-  "exclude": [
-    "node_modules",
-    "typings/main",
-    "typings/main.d.ts",
-    "test",
-    "dev",
-    "dist"
-  ]
+    "compilerOptions": {
+        "declaration": false,
+        "experimentalDecorators": true,
+        "jsx": "react",
+        "lib": [
+            "dom",
+            "es2015.core",
+            "es2015.collection",
+            "es2015.generator",
+            "es2015.iterable",
+            "es2015.promise",
+            "es2015.reflect",
+            "es2015.symbol",
+            "es5"
+        ],
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "outDir": "build",
+        "removeComments": false,
+        "rootDir": ".",
+        "sourceMap": true,
+        "stripInternal": true,
+        "target": "es5"
+    },
+    "exclude": [
+        "build",
+        "config",
+        "node_modules"
+    ]
 }
