@@ -43,9 +43,9 @@
     "@types/history": "^4.6.0",
     "@types/lodash": "^4.14.72",
     "@types/moment-timezone": "0.2.34",
-    "@types/react": "^16.0.2",
+    "@types/react": "^15.6.1",
     "@types/react-dom": "^15.5.2",
-    "@types/react-redux": "^5.0.0",
+    "@types/react-redux": "^4.4.47",
     "@types/react-router": "^4.0.14",
     "@types/react-router-redux": "^5.0.5",
     "@types/react-select": "^1.0.51",
@@ -66,5 +66,8 @@
     "webpack": "^3.5.2",
     "webpack-dev-server": "^2.7.1",
     "webpack-notifier": "^1.5.0"
+  },
+  "resolutions": {
+    "@types/react": "^15.6.1"
   }
 }
