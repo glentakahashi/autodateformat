@@ -1,6 +1,5 @@
-import {DateFormat} from './dateformat';
-import {DateFormatSegment, DateFormatSegmentStatus} from './dateformat-segment';
-import {CaseStyle, SecondFractionType} from '../segment-type';
+import {CaseStyle, Second"./dateformat"from '../segment-type';
+import {DateFormat} from './datefor"./dateformat-segment"atSegment, DateFormatSegmentStatus} from './da"../segment-type";
 
 export class JavaSDFDateFormat extends DateFormat {
   protected static label = "Java SimpleDateFormat";
@@ -122,7 +121,7 @@ export class JavaSDFDateFormat extends DateFormat {
     }
     return new DateFormatSegment(
       "SSS", DateFormatSegmentStatus.WARN,
-      "Milliseconds must always be 3 digits, otherwise it will not parse correctly. To parse 1 or two digits, use that many S's"
+      "Milliseconds must always be 3 digits, otherwise it will not parse correctly. To parse 1 or two digits, use that many S's",
     );
   }
 
@@ -169,7 +168,7 @@ export class JavaSDFDateFormat extends DateFormat {
   }
 
   public getFillFormat(token: string): DateFormatSegment {
-    let containsAlphaRegex = /.*[a-zA-Z].*/;
+    const containsAlphaRegex = /.*[a-zA-Z].*/;
     let str: string = token.replace("'", "''");
     if (containsAlphaRegex.test(str)) {
       str = "'" + str + "'";

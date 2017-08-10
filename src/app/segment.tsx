@@ -1,4 +1,4 @@
-import {SegmentType, SEGMENT_TYPES} from './segment-type';
+import {SEGMENT_TYPES, SegmentType} from "./segment-type";
 
 export class Segment {
   private types: { [id: string]: SegmentType};
@@ -10,8 +10,8 @@ export class Segment {
     this.selected = null;
     this.types = {};
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
-      let segmentType: typeof SegmentType = SEGMENT_TYPES[i];
-      let segment: SegmentType = Object.create(segmentType.prototype);
+      const segmentType: typeof SegmentType = SEGMENT_TYPES[i];
+      const segment: SegmentType = Object.create(segmentType.prototype);
       segment.constructor.apply(segment, new Array(token));
       if (segment.isValid()) {
         this.types[segmentType.id] = segment;
@@ -31,7 +31,7 @@ export class Segment {
 
   // TODO: make this more semantically in line with getType
   public getTypes(): SegmentType[] {
-    let types: SegmentType[] = [];
+    const types: SegmentType[] = [];
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
       if (this.has(SEGMENT_TYPES[i])) {
         types.push(this.getType(SEGMENT_TYPES[i]));
@@ -42,15 +42,15 @@ export class Segment {
 
   public getTypesSorted(): SegmentType[] {
     return this.getTypes().sort((a: SegmentType, b: SegmentType): number => {
-      let valA = (a.getID() === this.getSelectedType().id) ? 3 : (a.isEnabled() ? 2 : (a.isValid() ? 1 : 0));
-      let valB = (b.getID() === this.getSelectedType().id) ? 3 : (b.isEnabled() ? 2 : (b.isValid() ? 1 : 0));
+      const valA = (a.getID() === this.getSelectedType().id) ? 3 : (a.isEnabled() ? 2 : (a.isValid() ? 1 : 0));
+      const valB = (b.getID() === this.getSelectedType().id) ? 3 : (b.isEnabled() ? 2 : (b.isValid() ? 1 : 0));
       // We want highest values first
       return valB - valA;
     });
   }
 
   public getEnabledTypes(): SegmentType[] {
-    let types: SegmentType[] = [];
+    const types: SegmentType[] = [];
     for (let i = 0; i < SEGMENT_TYPES.length; i++) {
       if (this.hasEnabled(SEGMENT_TYPES[i])) {
         types.push(this.getType(SEGMENT_TYPES[i]));
@@ -101,7 +101,7 @@ export class Segment {
     }
   }
 
-  public setTypes(allowedSegmentTypes: (typeof SegmentType)[]) {
+  public setTypes(allowedSegmentTypes: Array<typeof SegmentType>) {
     for (let i = 0; i < allowedSegmentTypes.length; i++) {
       this.enableType(allowedSegmentTypes[i]);
     }

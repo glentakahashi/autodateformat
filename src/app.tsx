@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { applyMiddleware, createStore } from "redux";
 import { createLogger } from "redux-logger";
 
-import { AppContainer } from "./appContainer";
+import { Converter } from "./app/converter";
 import { reducer } from "./state/reducers";
 
 // Provided by DefinePlugin
@@ -31,7 +31,7 @@ const appElement = document.getElementById("app");
 if (appElement != null) {
     ReactDOM.render((
         <Provider store={store}>
-            <AppContainer />
+            <Converter />
         </Provider>
     ), appElement);
 }

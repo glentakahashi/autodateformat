@@ -1,6 +1,5 @@
-import {DateFormat} from './dateformat';
-import {DateFormatSegment, DateFormatSegmentStatus} from './dateformat-segment';
-import {CaseStyle, SecondFractionType} from '../segment-type';
+import {CaseStyle, Second"./dateformat"from '../segment-type';
+import {DateFormat} from './datefor"./dateformat-segment"atSegment, DateFormatSegmentStatus} from './da"../segment-type";
 
 export class PostgresDateformat extends DateFormat {
   protected static label = "Postgres Date";
@@ -165,12 +164,12 @@ export class PostgresDateformat extends DateFormat {
     return new DateFormatSegment(
       "Error", DateFormatSegmentStatus.ERROR,
       "Java SimpleDateFormat cannot parse directly from epoch.\n" +
-      "Parse epoch directly using to_timestamp(your_number)."
+      "Parse epoch directly using to_timestamp(your_number).",
     );
   }
 
   public getFillFormat(token: string): DateFormatSegment {
-    let containsAlphaRegex = /.*[a-zA-Z].*/;
+    const containsAlphaRegex = /.*[a-zA-Z].*/;
     let str: string = token.replace('"', '\\"');
     if (containsAlphaRegex.test(str)) {
       str = '"' + str + '"';
@@ -189,8 +188,8 @@ export class PostgresDateformat extends DateFormat {
 
   private getCasedSegmentType(caseStyle: CaseStyle, formatString: string): DateFormatSegment {
     let format = formatString;
-    let stat = DateFormatSegmentStatus.OKAY;
-    let tooltip = null;
+    const stat = DateFormatSegmentStatus.OKAY;
+    const tooltip = null;
     switch (caseStyle) {
       case CaseStyle.Upper:
         format = format.toUpperCase();

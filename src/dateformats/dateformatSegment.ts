@@ -21,11 +21,11 @@ export class DateFormatSegment {
   public getStatusClass(): string {
     switch (this.stat) {
       case DateFormatSegmentStatus.ERROR:
-        return 'statusclass-error';
+        return "statusclass-error";
       case DateFormatSegmentStatus.OKAY:
-        return 'statusclass-okay';
+        return "statusclass-okay";
       case DateFormatSegmentStatus.WARN:
-        return 'statusclass-warn';
+        return "statusclass-warn";
       default:
         return null;
     }

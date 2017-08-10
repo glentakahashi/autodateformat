@@ -1,6 +1,5 @@
-import {DateFormat} from './dateformat';
-import {DateFormatSegment, DateFormatSegmentStatus} from './dateformat-segment';
-import {CaseStyle, SecondFractionType} from '../segment-type';
+import {CaseStyle, Second"./dateformat"from '../segment-type';
+import {DateFormat} from './datefor"./dateformat-segment"atSegment, DateFormatSegmentStatus} from './da"../segment-type";
 
 export class CoreutilsDateFormat extends DateFormat {
   protected static label = "Coreutils Date";
@@ -161,7 +160,7 @@ export class CoreutilsDateFormat extends DateFormat {
   }
 
   public getFillFormat(token: string): DateFormatSegment {
-    return new DateFormatSegment(token.replace('%', '%%'), DateFormatSegmentStatus.OKAY, null);
+    return new DateFormatSegment(token.replace("%", "%%"), DateFormatSegmentStatus.OKAY, null);
   }
 
   // TODO: what if it doesn't have parsing?? (like this one) Probably, just return null and show an info

@@ -1,7 +1,36 @@
 {
-  "extends": ["tslint:latest", "tslint-react"],
-  "rules": {
-    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
-    "prefer-conditional-expression": false
-  }
+    "extends": ["tslint:latest", "tslint-react"],
+    "rules": {
+        "ban": {
+            "options": [
+                ["_", "extend", "use object spread"],
+                ["_", "isNull", "use plain JS"],
+                ["_", "isDefined", "use plain JS"],
+                ["assert", "equal", "use assert.strictEqual instead"],
+                ["describe", "only", "should not be committed to repo"],
+                ["it", "only", "should not be committed to repo"],
+                ["Object", "getOwnPropertyNames", "use Object.keys()"],
+                ["test", "only", "should not be committed to repo"]
+            ]
+        },
+        "linebreak-style": {
+            "options": ["LF"]
+        },
+        "indent": {
+            "options": ["spaces", 4]
+        },
+        "no-default-export": true,
+        "no-invalid-this": [true, "check-function-in-method"],
+        "no-unnecessary-callback-wrapper": true,
+        "no-unnecessary-initializer": true,
+        "prefer-conditional-expression": false,
+        "variable-name": {
+            "options": [
+                "allow-leading-underscore",
+                "allow-pascal-case",
+                "ban-keywords",
+                "check-format"
+            ]
+        }
+    }
 }

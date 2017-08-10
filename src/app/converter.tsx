@@ -4,20 +4,18 @@ import { Dispatch } from "redux";
 
 import {
     IDateTimeFormatAppState,
-    ISegment,
     setDate,
-} from "./state";
+} from "../state";
 
 interface IStateProps {
     date: string;
-    segments: ISegment[];
 }
 
 interface IDispatchProps {
     dispatchSetDate(data: string): void;
 }
 
-type IAppContainerProps = IStateProps & IDispatchProps;
+type IConverterProps = IStateProps & IDispatchProps;
 
 interface IComponentState {
     date: string;
@@ -47,12 +45,12 @@ const SAMPLE_DATES = [
 ];
 
 /**
- * AppContainer
+ * Converter
  *
  * Based on app state, will delegate to the corresponding views
  */
-class UnconnectedAppContainer extends React.Component<IAppContainerProps, IComponentState> {
-    constructor(props: IAppContainerProps) {
+class UnconnectedConverter extends React.Component<IConverterProps, IComponentState> {
+    constructor(props: IConverterProps) {
         super(props);
         this.state = {
             date: props.date,
@@ -90,19 +88,18 @@ class UnconnectedAppContainer extends React.Component<IAppContainerProps, ICompo
     }
 }
 
-function mapStateToProps(state: IDateTimeFormatAppState, _props: {}): IStateProps {
-    const { segments, date } = state;
+function mapStateToProps(state: IDateTimeFormatAppState): IStateProps {
+    const { date } = state;
 
     return {
         date,
-        segments,
     };
 }
 
-function mapDispatchToProps(dispatch: Dispatch<IDateTimeFormatAppState>, _props: {}): IDispatchProps {
+function mapDispatchToProps(dispatch: Dispatch<IDateTimeFormatAppState>): IDispatchProps {
     return {
         dispatchSetDate: (date: string) => dispatch(setDate(date)),
     };
 }
 
-export const AppContainer = connect(mapStateToProps, mapDispatchToProps)(UnconnectedAppContainer);
+export const Converter = connect(mapStateToProps, mapDispatchToProps)(UnconnectedConverter);
