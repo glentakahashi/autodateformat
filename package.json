@@ -66,5 +66,9 @@
     "webpack": "^3.5.2",
     "webpack-dev-server": "^2.7.1",
     "webpack-notifier": "^1.5.0"
+  },
+  "resolutions": {
+    "@types/react-dom/@types/react": "^15.6.1",
+    "@types/react-redux/@types/react": "^15.6.1"
   }
 }

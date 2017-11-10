@@ -7,39 +7,36 @@ import {
   IHourMinuteSecondSegmentType, IHourMinuteSegmentType, IHourSegmentType,
   IMinuteSegmentType, IMonthSegmentType, ISecondFractionSegmentType,
   ISecondSegmentType, ISegmentType, ITextMonthSegmentType,
-  IYearSegmentType,
+  IYearSegmentType, ISegment
 } from "../state";
 import {Segment} from "./segment";
 
 interface IStateProps {
     date: string;
+    segments: ISegment[];
 }
 
 interface IDispatchProps {
     dispatchSetDate(data: string): void;
 }
 
-type IConverterProps = IStateProps & IDispatchProps;
+type IDateTimeProps = IStateProps & IDispatchProps;
 
-interface IComponentState {
-    date: string;
-}
-
-export class UnconnectedDateTime extends React.Component<IConverterProps, IComponentState> {
+export class UnconnectedDateTime extends React.Component<IDateTimeProps, {}> {
   private static DATE_SEPARATORS: string[] = ["-", "/", "."];
 
-  private segments: Segment[];
-
-  constructor(datetimeString: string) {
-    this.segments = this.parseSegments(datetimeString);
-    // Set the first one to be selected for each
-    for (let i = 0; i < this.segments.length; i++) {
-      const enabledTypes: SegmentType[] = this.segments[i].getEnabledTypes();
-      if (enabledTypes.length > 0) {
-        this.segments[i].setSelectedID(enabledTypes[0].getID());
-      }
-    }
+  constructor(props: IDateTimeProps) {
+      super(props);
   }
+//     this.segments = this.parseSegments(datetimeString);
+//     // Set the first one to be selected for each
+//     for (let i = 0; i < this.segments.length; i++) {
+//       const enabledTypes: SegmentType[] = this.segments[i].getEnabledTypes();
+//       if (enabledTypes.length > 0) {
+//         this.segments[i].setSelectedID(enabledTypes[0].getID());
+//       }
+//     }
+//   }
 
 //   public toString(): string {
 //     let str = "";
@@ -377,4 +374,4 @@ function mapDispatchToProps(dispatch: Dispatch<IDateTimeFormatAppState>, _props:
     };
 }
 
-export const Converter = connect(mapStateToProps, mapDispatchToProps)(UnconnectedDateTime);
+export const DateTime = connect(mapStateToProps, mapDispatchToProps)(UnconnectedDateTime);
